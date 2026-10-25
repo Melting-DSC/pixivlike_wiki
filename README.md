@@ -152,7 +152,6 @@ PORT=8080 npm run dev
 | `version` | string | バージョン表記 |
 | `sections` | array | 本文セクション（必須） |
 | `relatedTags` | string[] | 関連タグ |
-| `about` | object | `{ title, text }` |
 
 セクションの構造:
 
@@ -184,6 +183,8 @@ PORT=8080 npm run dev
 `site.json` は編集モードからは編集できません。変更する場合はファイルを直接書き換えます。
 
 パンくずリスト・ハンバーガーメニュー・編集履歴は表示しません。ヘッダー左のハンバーガーボタンは見た目だけで、押しても何も起きません。旧データの `article.breadcrumb` / `article.history` / `site.menu` / `site.header.menuLabel` は読み込んでも無視されます。
+
+本文の下の「このサイトについて」欄は `assets/js/render.js` の固定文言（`ABOUT_TEXT`）で、必ず表示されます。編集モードやJSONからは変更できず、旧データの `article.about` は無視されます。
 
 ## 本文ブロック
 

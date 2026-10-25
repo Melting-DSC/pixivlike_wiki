@@ -219,6 +219,10 @@ ${blocks}
    * Page pieces
    * ------------------------------------------------------------------ */
 
+  // Fixed text shown under every article. Not editable and not stored in JSON.
+  const ABOUT_TEXT =
+    "「うちのこ百科事典」は、ピクシブ百科事典の記事ページを参考に制作した非公式のパロディサイトです。自分の創作キャラクター（うちの子）の紹介ページを作るためのテンプレートとして使えます。pixiv株式会社とは関係ありません。";
+
   /* Article header links and the hero image are empty links: they look like
      links but do nothing when clicked (main.js cancels `data-empty-link`). */
   function renderArticleActions(article) {
@@ -296,10 +300,10 @@ ${blocks}
 
         <section class="about" id="about" aria-labelledby="about-title">
           <div class="section__heading">
-            <h2 class="section__title" id="about-title">${esc(article.about?.title || "このサイトについて")}<a class="section__anchor" href="#about" aria-label="このサイトについてへのリンク">#</a></h2>
+            <h2 class="section__title" id="about-title">このサイトについて<a class="section__anchor" href="#about" aria-label="このサイトについてへのリンク">#</a></h2>
             <span class="section__rule" aria-hidden="true"></span>
           </div>
-          <p>${inline(article.about?.text || "")}</p>
+          <p>${esc(ABOUT_TEXT)}</p>
         </section>
       </article>`;
   }
