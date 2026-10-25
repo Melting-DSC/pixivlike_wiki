@@ -33,25 +33,6 @@
   ],
   "updated": "2026-10-25",
   "version": "parody-1.0",
-  "linkTerms": {
-    "UNIX": "https://ja.wikipedia.org/wiki/UNIX",
-    "プログラミング言語": "#overview",
-    "OS": "https://ja.wikipedia.org/wiki/%E3%82%AA%E3%83%9A%E3%83%AC%E3%83%BC%E3%83%86%E3%82%A3%E3%83%B3%E3%82%B0%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0",
-    "デバイスドライバ": "#features",
-    "組み込みシステム": "#features",
-    "ポインタ": "https://ja.wikipedia.org/wiki/%E3%83%9D%E3%82%A4%E3%83%B3%E3%82%BF_(%E3%83%97%E3%83%AD%E3%82%B0%E3%83%A9%E3%83%9F%E3%83%B3%E3%82%B0)",
-    "未定義動作": "https://ja.wikipedia.org/wiki/%E6%9C%AA%E5%AE%9A%E7%BE%A9%E5%8B%95%E4%BD%9C",
-    "ハッカー": "#related-tags",
-    "Java": "https://ja.wikipedia.org/wiki/Java",
-    "C#": "https://ja.wikipedia.org/wiki/C_Sharp",
-    "C++": "https://ja.wikipedia.org/wiki/C%2B%2B",
-    "D言語": "https://ja.wikipedia.org/wiki/D%E8%A8%80%E8%AA%9E",
-    "Rust": "https://ja.wikipedia.org/wiki/Rust_(%E3%83%97%E3%83%AD%E3%82%B0%E3%83%A9%E3%83%9F%E3%83%B3%E3%82%B0%E8%A8%80%E8%AA%9E)",
-    "Objective-C": "https://ja.wikipedia.org/wiki/Objective-C",
-    "CUDA": "https://ja.wikipedia.org/wiki/CUDA",
-    "アスキーアート": "#features",
-    "セグメンテーションフォールト": "#features"
-  },
   "sections": [
     {
       "id": "overview",

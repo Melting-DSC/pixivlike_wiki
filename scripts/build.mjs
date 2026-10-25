@@ -56,44 +56,12 @@ async function checkLocalAsset(src, label) {
   }
 }
 
-function scanLinkTerms(text, linkTerms, label) {
-  if (typeof text !== "string") return;
-  for (const match of text.matchAll(/\[\[([^\]|]+?)(?:\|[^\]]+?)?\]\]/g)) {
-    const term = match[1];
-    if (!Object.hasOwn(linkTerms || {}, term)) {
-      warnings.push(`linkTerms に「${term}」がありません（${label}）`);
-    }
-  }
-}
+const BLOCK_TYPES = new Set(["paragraph", "list", "callout", "quote", "figure", "code", "tags", "divider"]);
 
 function scanBlocks(section) {
-  const linkTerms = article.linkTerms || {};
   for (const [index, block] of (section.blocks || []).entries()) {
-    const label = `section「${section.title}」blocks[${index}]`;
-    switch (block.type) {
-      case "paragraph":
-        scanLinkTerms(block.text, linkTerms, label);
-        break;
-      case "list":
-        scanLinkTerms(block.title, linkTerms, label);
-        for (const item of block.items || []) scanLinkTerms(item, linkTerms, label);
-        break;
-      case "callout":
-        scanLinkTerms(block.title, linkTerms, label);
-        scanLinkTerms(block.text, linkTerms, label);
-        break;
-      case "quote":
-        scanLinkTerms(block.text, linkTerms, label);
-        break;
-      case "figure":
-        scanLinkTerms(block.caption, linkTerms, label);
-        break;
-      case "code":
-      case "tags":
-      case "divider":
-        break;
-      default:
-        warnings.push(`未対応の block type「${block.type}」（${label}）`);
+    if (!BLOCK_TYPES.has(block.type)) {
+      warnings.push(`未対応の block type「${block.type}」（section「${section.title}」blocks[${index}]）`);
     }
   }
 }

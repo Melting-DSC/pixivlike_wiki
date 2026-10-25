@@ -78,8 +78,6 @@
     target[last] = value;
   }
 
-  const today = () => new Date().toISOString().slice(0, 10);
-
   function uniqueId(base, used = []) {
     const set = new Set(used);
     let index = 1;
@@ -89,13 +87,6 @@
       candidate = `${base}-${index}`;
     }
     return candidate;
-  }
-
-  function uniqueKey(base, object = {}) {
-    if (!Object.hasOwn(object, base)) return base;
-    let index = 2;
-    while (Object.hasOwn(object, `${base}${index}`)) index += 1;
-    return `${base}${index}`;
   }
 
   function setStatus(kind, text) {
@@ -262,10 +253,7 @@
    * ======================================================================== */
 
   function renderAll() {
-    renderBreadcrumbs();
     renderActions();
-    renderLinkTerms();
-    renderHistory();
     renderSections();
     updateStats();
     updateHeroPreview();
@@ -290,25 +278,6 @@
     for (const node of $$('[data-count="blocks"]')) node.textContent = blocks;
   }
 
-  /* ---------------------------- breadcrumb ------------------------------ */
-
-  function renderBreadcrumbs() {
-    const container = $("#breadcrumb-rows");
-    if (!container) return;
-    const rows = state.article?.breadcrumb ?? [];
-    container.innerHTML = rows.length
-      ? rows
-          .map(
-            (row, index) => `<div class="repeat-row">
-  <input type="text" data-path="article.breadcrumb.${index}.label" value="${attr(row.label)}" placeholder="階層名" aria-label="パンくず ${index + 1} の名前">
-  <input type="text" data-path="article.breadcrumb.${index}.href" value="${attr(row.href)}" placeholder="#top" aria-label="パンくず ${index + 1} のリンク先">
-  <button type="button" class="row-icon-button" data-remove-array="article.breadcrumb" data-index="${index}" aria-label="この階層を削除">×</button>
-</div>`,
-          )
-          .join("")
-      : emptyState("パンくずはまだありません。「＋ 追加」から作成できます。");
-  }
-
   function renderActions() {
     const container = $("#action-rows");
     if (!container) return;
@@ -324,42 +293,6 @@
           )
           .join("")
       : emptyState("ヘッダーリンクはまだありません。");
-  }
-
-  function renderHistory() {
-    const container = $("#history-rows");
-    if (!container) return;
-    const rows = state.article?.history ?? [];
-    container.innerHTML = rows.length
-      ? rows
-          .map(
-            (row, index) => `<div class="repeat-row repeat-row--history">
-  <input type="date" data-path="article.history.${index}.date" value="${attr(row.date)}" aria-label="更新日">
-  <input type="text" data-path="article.history.${index}.note" value="${attr(row.note)}" placeholder="更新内容" aria-label="更新内容">
-  <button type="button" class="row-icon-button" data-remove-array="article.history" data-index="${index}" aria-label="この履歴を削除">×</button>
-</div>`,
-          )
-          .join("")
-      : emptyState("編集履歴はまだありません。");
-  }
-
-  /* ---------------------------- link terms ------------------------------ */
-
-  function renderLinkTerms() {
-    const container = $("#linkterm-rows");
-    if (!container) return;
-    const terms = Object.entries(state.article?.linkTerms ?? {});
-    container.innerHTML = terms.length
-      ? terms
-          .map(
-            ([term, href]) => `<div class="repeat-row repeat-row--linkterm">
-  <input type="text" data-term-key="${attr(term)}" value="${attr(term)}" placeholder="語句" aria-label="リンク語句">
-  <input type="text" data-term-href="${attr(term)}" value="${attr(href)}" placeholder="#top または https://…" aria-label="リンク先">
-  <button type="button" class="row-icon-button" data-remove-term="${attr(term)}" aria-label="この語句を削除">×</button>
-</div>`,
-          )
-          .join("")
-      : emptyState("リンク語句はまだありません。");
   }
 
   /* ----------------------------- sections ------------------------------- */
@@ -589,9 +522,7 @@
    * ======================================================================== */
 
   function renderForPath(path = "") {
-    if (path.startsWith("article.breadcrumb")) return renderBreadcrumbs();
     if (path.startsWith("article.actions")) return renderActions();
-    if (path.startsWith("article.history")) return renderHistory();
     if (path.startsWith("article.sections")) return renderSections();
     return renderAll();
   }
@@ -604,27 +535,10 @@
     if (!state.article || !state.site) return;
 
     switch (kind) {
-      case "breadcrumb":
-        state.article.breadcrumb ??= [];
-        state.article.breadcrumb.push({ label: "新しい階層", href: "#top" });
-        renderBreadcrumbs();
-        break;
       case "action":
         state.article.actions ??= [];
         state.article.actions.push({ label: "新しいリンク" });
         renderActions();
-        break;
-      case "linkterm": {
-        state.article.linkTerms ??= {};
-        const key = uniqueKey("新しい語句", state.article.linkTerms);
-        state.article.linkTerms[key] = "#top";
-        renderLinkTerms();
-        break;
-      }
-      case "history":
-        state.article.history ??= [];
-        state.article.history.unshift({ date: today(), note: "更新内容" });
-        renderHistory();
         break;
       default:
         return;
@@ -749,48 +663,6 @@
     markDirty();
   }
 
-  function handleTermRename(field) {
-    const terms = state.article?.linkTerms;
-    if (!terms) return;
-
-    const oldKey = field.dataset.termKey;
-    const newKey = field.value;
-    field.classList.remove("is-invalid");
-
-    // Allow the field to be temporarily empty while the user is retyping it.
-    if (newKey === "") return;
-    if (newKey === oldKey) return;
-
-    if (Object.hasOwn(terms, newKey)) {
-      field.classList.add("is-invalid");
-      return;
-    }
-
-    const entries = Object.entries(terms).map(([key, value]) => (key === oldKey ? [newKey, value] : [key, value]));
-    state.article.linkTerms = Object.fromEntries(entries);
-    field.dataset.termKey = newKey;
-
-    const row = field.closest(".repeat-row");
-    const hrefInput = row?.querySelector("[data-term-href]");
-    if (hrefInput) hrefInput.dataset.termHref = newKey;
-
-    markDirty();
-  }
-
-  function handleTermBlur(field) {
-    if (field.classList.contains("is-invalid") || field.value === "") {
-      field.value = field.dataset.termKey;
-      field.classList.remove("is-invalid");
-    }
-  }
-
-  function handleTermHref(field) {
-    const key = field.dataset.termHref;
-    if (!state.article?.linkTerms || !Object.hasOwn(state.article.linkTerms, key)) return;
-    state.article.linkTerms[key] = field.value;
-    markDirty();
-  }
-
   async function handleImageUpload(input) {
     const path = input.dataset.uploadImage;
     const file = input.files?.[0];
@@ -834,20 +706,12 @@
 
     if (article) {
       article.relatedTags = (article.relatedTags ?? []).filter(Boolean);
-      article.breadcrumb = (article.breadcrumb ?? []).filter((row) => String(row.label ?? "").trim());
       article.actions = (article.actions ?? []).filter((row) => String(row.label ?? "").trim());
       article.sections = (article.sections ?? []).map((section) => ({
         ...section,
         level: Number(section.level) === 3 ? 3 : 2,
         blocks: section.blocks ?? [],
       }));
-
-      const terms = Object.fromEntries(
-        Object.entries(article.linkTerms ?? {})
-          .map(([key, value]) => [String(key).trim(), value])
-          .filter(([key]) => key),
-      );
-      article.linkTerms = terms;
     }
   }
 
@@ -1065,19 +929,14 @@
 
   function bindEvents() {
     document.addEventListener("input", (event) => {
-      const field = event.target.closest("[data-path], [data-term-key], [data-term-href]");
+      const field = event.target.closest("[data-path]");
       if (!field) return;
-      if (field.hasAttribute("data-term-key")) return handleTermRename(field);
-      if (field.hasAttribute("data-term-href")) return handleTermHref(field);
       handlePathInput(field);
     });
 
     document.addEventListener("change", (event) => {
-      const field = event.target.closest("[data-path], [data-term-key], [data-term-href]");
-      if (field) {
-        if (field.hasAttribute("data-term-key")) handleTermBlur(field);
-        else if (!field.hasAttribute("data-term-href")) handlePathInput(field);
-      }
+      const field = event.target.closest("[data-path]");
+      if (field) handlePathInput(field);
 
       const typeSelect = event.target.closest("[data-block-type]");
       if (typeSelect) {
@@ -1176,13 +1035,6 @@
           markDirty();
         }
         return;
-      }
-
-      const removeTermButton = event.target.closest("[data-remove-term]");
-      if (removeTermButton) {
-        delete state.article.linkTerms[removeTermButton.dataset.removeTerm];
-        renderLinkTerms();
-        markDirty();
       }
     });
 

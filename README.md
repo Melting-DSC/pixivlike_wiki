@@ -143,15 +143,14 @@ PORT=8080 npm run dev
 | `title` | string | 記事タイトル（必須） |
 | `reading` | string | 読み。ページタイトルに表示 |
 | `summary` | string | 冒頭の説明。meta descriptionにも使用 |
-| `breadcrumb` | array | `{ label, href? }` の配列。カテゴリ系の href はリンクにしない |
+| `breadcrumb` | array | `{ label, href? }` の配列。カテゴリ系の href はリンクにしない。編集モードでは編集不可 |
 | `hero` | object | `src`, `alt`, `caption`, `credit`。画像は押しても移動しない空リンク |
 | `actions` | array | `{ label, primary? }`。タイトル下のリンク。押しても移動しない空リンク |
 | `updated` | string | 最終更新日（`YYYY-MM-DD`） |
 | `version` | string | バージョン表記 |
-| `linkTerms` | object | `[[語句]]` のリンク先 |
 | `sections` | array | 本文セクション（必須） |
 | `relatedTags` | string[] | 関連タグ |
-| `history` | array | `{ date, note }` の配列 |
+| `history` | array | `{ date, note }` の配列。編集モードでは編集不可 |
 | `about` | object | `{ title, text }` |
 
 セクションの構造:
@@ -205,13 +204,12 @@ PORT=8080 npm run dev
 
 | 書き方 | 結果 |
 | --- | --- |
-| `[[C++]]` | `linkTerms` のリンク先で「C++」をリンク |
-| `[[C++\|Cプラプラ]]` | 表示名を変えてリンク |
+| `[[C++]]` | 「C++」をリンクと同じ見た目の平文で表示（押しても移動しない） |
+| `[[C++\|Cプラプラ]]` | 表示名を変えて同様に表示 |
 | `[ラベル](https://example.com)` | 通常のリンク。外部URLは新しいタブ |
 | `**強調**` | 太字 |
 | `` `コード` `` | インラインコード |
 
-- `[[語句]]` が `linkTerms` にない場合は平文で表示されます。
 - URLは `WikiRender.safeHref()` で検証されます。`javascript:` などは `#` に置き換わります。
 - HTMLタグはエスケープされ、そのままでは埋め込まれません。
 - コードブロック内の `code` にはインライン記法を適用しません。
@@ -226,7 +224,6 @@ PORT=8080 npm run dev
 - セクション名の欠落
 - ローカルのヒーロー画像・`figure` 画像ファイルの存在
 - 未知のブロック種別
-- `linkTerms` にない `[[語句]]`
 - `2` / `3` 以外の section `level`
 
 ローカル画像パスはリポジトリルート基準です。`https://` と `data:` URL は存在チェックの対象外です。

@@ -100,7 +100,7 @@
           <div class="file-grid">
             <div class="file-card">
               <h3>基本情報</h3>
-              <p>タイトル、読み、概要、ヒーロー画像、パンくず、ヘッダーリンク、リンク語句、編集履歴。</p>
+              <p>タイトル、読み、概要、ヒーロー画像、ヘッダーリンク、このサイトについて。</p>
             </div>
             <div class="file-card">
               <h3>本文</h3>
@@ -132,20 +132,13 @@
           <table>
             <thead><tr><th>書き方</th><th>結果</th></tr></thead>
             <tbody>
-              <tr><td><code>[[C++]]</code></td><td>登録済みのリンク語句を使って「C++」をリンク。</td></tr>
-              <tr><td><code>[[C++|Cプラプラ]]</code></td><td>表示名だけ変えてリンク。</td></tr>
+              <tr><td><code>[[C++]]</code></td><td>「C++」をリンクと同じ見た目で表示（押しても移動しません）。</td></tr>
+              <tr><td><code>[[C++|Cプラプラ]]</code></td><td>表示名だけ変えて同様に表示。</td></tr>
               <tr><td><code>[ラベル](https://example.com)</code></td><td>通常のリンク。外部URLは新しいタブで開きます。</td></tr>
               <tr><td><code>**強調**</code></td><td>太字。</td></tr>
               <tr><td><code>`コード`</code></td><td>インラインコード。</td></tr>
             </tbody>
           </table>
-          <div class="callout callout--info">
-            <strong><code>[[語句]]</code> のリンク先</strong>
-            <p>
-              「基本情報」の「本文のリンク語句」にURLや <code>#アンカー</code> を登録します。
-              未登録の語句は平文で表示されます。
-            </p>
-          </div>
           <p>
             HTMLタグはエスケープされ、そのままでは埋め込まれません。コードブロック内の <code>code</code> も
             そのまま表示されるため、インライン記法は適用されません。

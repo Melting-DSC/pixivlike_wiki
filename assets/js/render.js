@@ -46,19 +46,16 @@
 
   const openEditorAttr = (href) => (isEditorHref(href) ? " data-open-editor" : "");
 
-  function inline(value, linkTerms = {}) {
+  function inline(value) {
     let text = stripControl(value ?? "");
     const held = [];
     const hold = (html) => `\u0001${held.push(html) - 1}\u0001`;
 
     text = text.replace(/`([^`\n]+)`/g, (_, code) => hold(`<code>${esc(code)}</code>`));
 
-    text = text.replace(/\[\[([^\]|]+?)(?:\|([^\]]+?))?\]\]/g, (_, term, label) => {
-      const target = linkTerms[term];
-      if (!target) return esc(label || term);
-      const href = safeHref(target);
-      return hold(`<a href="${attr(href)}"${linkAttrs(href)}${openEditorAttr(href)}>${esc(label || term)}</a>`);
-    });
+    text = text.replace(/\[\[([^\]|]+?)(?:\|([^\]]+?))?\]\]/g, (_, term, label) =>
+      hold(`<span class="link-term">${esc(label || term)}</span>`),
+    );
 
     text = text.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label, href) => {
       const safe = safeHref(href);
@@ -149,18 +146,18 @@
    * Blocks / sections
    * ------------------------------------------------------------------ */
 
-  function renderBlock(block, linkTerms) {
+  function renderBlock(block) {
     switch (block.type) {
       case "paragraph":
-        return `<p>${inline(block.text, linkTerms)}</p>`;
+        return `<p>${inline(block.text)}</p>`;
 
       case "list": {
         const tag = block.ordered ? "ol" : "ul";
         const title = block.title
-          ? `<p class="block-label">${inline(block.title, linkTerms)}</p>`
+          ? `<p class="block-label">${inline(block.title)}</p>`
           : "";
         const items = (block.items || [])
-          .map((item) => `<li>${inline(item, linkTerms)}</li>`)
+          .map((item) => `<li>${inline(item)}</li>`)
           .join("\n");
         return `${title}<${tag} class="body-list">${items}</${tag}>`;
       }
@@ -180,8 +177,8 @@
         return `<aside class="callout callout--${tone}">
   <span class="callout__icon" aria-hidden="true">${icon}</span>
   <div class="callout__body">
-    ${block.title ? `<p class="callout__title">${inline(block.title, linkTerms)}</p>` : ""}
-    <p>${inline(block.text, linkTerms)}</p>
+    ${block.title ? `<p class="callout__title">${inline(block.title)}</p>` : ""}
+    <p>${inline(block.text)}</p>
   </div>
 </aside>`;
       }
@@ -194,11 +191,11 @@
       case "figure":
         return `<figure class="article-figure">
   ${block.src ? `<img src="${attr(block.src)}" alt="${attr(block.alt || "")}" loading="lazy">` : `<div class="article-figure__missing" role="img" aria-label="${attr(block.alt || "画像が設定されていません")}">画像が設定されていません</div>`}
-  <figcaption><span>${inline(block.caption || "", linkTerms)}</span>${block.credit ? `<span class="article-figure__credit">${esc(block.credit)}</span>` : ""}</figcaption>
+  <figcaption><span>${inline(block.caption || "")}</span>${block.credit ? `<span class="article-figure__credit">${esc(block.credit)}</span>` : ""}</figcaption>
 </figure>`;
 
       case "quote":
-        return `<blockquote class="article-quote"><p>${inline(block.text, linkTerms)}</p>${
+        return `<blockquote class="article-quote"><p>${inline(block.text)}</p>${
           block.cite ? `<cite>${esc(block.cite)}</cite>` : ""
         }</blockquote>`;
 
@@ -210,10 +207,10 @@
     }
   }
 
-  function renderSection(section, linkTerms) {
+  function renderSection(section) {
     const isSub = Number(section.level) === 3;
     const headingTag = isSub ? "h3" : "h2";
-    const blocks = (section.blocks || []).map((block) => renderBlock(block, linkTerms)).join("\n");
+    const blocks = (section.blocks || []).map((block) => renderBlock(block)).join("\n");
     const rule = isSub ? "" : '<span class="section__rule" aria-hidden="true"></span>';
     return `<section class="section${isSub ? " section--sub" : ""}" id="${attr(section.id)}" data-section>
   <div class="section__heading">
@@ -270,7 +267,6 @@ ${blocks}
 
   function renderArticleElement(state) {
     const { article = {} } = state;
-    const linkTerms = article.linkTerms || {};
     const sections = numberSections(article.sections || []);
     const hero = article.hero || {};
     const heroMedia = hero.src
@@ -298,7 +294,7 @@ ${blocks}
               </button>
             </div>
             <p class="article-reading">${esc(article.reading || "")}</p>
-            <p class="article-summary">${inline(article.summary || "", linkTerms)}</p>
+            <p class="article-summary">${inline(article.summary || "")}</p>
             <ul class="article-actions">${renderArticleActions(article)}</ul>
           </div>
         </header>
@@ -321,7 +317,7 @@ ${blocks}
         </details>
 
         <div class="article-body">
-          ${sections.map((section) => renderSection(section, linkTerms)).join("\n")}
+          ${sections.map((section) => renderSection(section)).join("\n")}
         </div>
 
         <section class="about" id="about" aria-labelledby="about-title">
@@ -329,7 +325,7 @@ ${blocks}
             <h2 class="section__title" id="about-title">${esc(article.about?.title || "このサイトについて")}<a class="section__anchor" href="#about" aria-label="このサイトについてへのリンク">#</a></h2>
             <span class="section__rule" aria-hidden="true"></span>
           </div>
-          <p>${inline(article.about?.text || "", linkTerms)}</p>
+          <p>${inline(article.about?.text || "")}</p>
           <p class="about__links">
             <a href="https://dic.pixiv.net/a/C%E8%A8%80%E8%AA%9E" target="_blank" rel="noopener noreferrer">参考にしたページ（pixiv百科事典「C言語」）</a>
             <span aria-hidden="true">・</span>

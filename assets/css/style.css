@@ -971,6 +971,11 @@ a:hover {
   text-decoration: underline;
 }
 
+/* 本文の [[語句]]。リンクと同じ見た目だが遷移しない平文。 */
+.link-term {
+  color: var(--link);
+}
+
 .section__content strong {
   color: var(--text-1);
   font-weight: 700;
@@ -2301,7 +2306,8 @@ body.is-menu-open {
     box-shadow: none;
   }
 
-  a {
+  a,
+  .link-term {
     color: inherit;
     text-decoration: underline;
   }

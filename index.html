@@ -84,7 +84,7 @@
             <header class="panel-head">
               <p class="panel-head__eyebrow">basic information</p>
               <h1 id="panel-basic-title">基本情報</h1>
-              <p>記事タイトル、概要、ヒーロー画像、パンくず、リンク語句などを編集します。</p>
+              <p>記事タイトル、概要、ヒーロー画像、ヘッダーリンクなどを編集します。</p>
             </header>
 
             <article class="editor-card">
@@ -173,38 +173,11 @@
 
             <article class="editor-card">
               <header class="editor-card__head">
-                <h2>パンくずリスト</h2>
-                <button type="button" class="editor-mini-button" data-add="breadcrumb">＋ 追加</button>
-              </header>
-              <p class="editor-card__note">記事名は自動で末尾に付きます。ここには上位階層だけを並べます。</p>
-              <div class="repeat-list" id="breadcrumb-rows"></div>
-            </article>
-
-            <article class="editor-card">
-              <header class="editor-card__head">
                 <h2>記事ヘッダーのリンク</h2>
                 <button type="button" class="editor-mini-button" data-add="action">＋ 追加</button>
               </header>
               <p class="editor-card__note">タイトル下に縦に並ぶリンクです。表示名だけを設定でき、押しても移動しません。</p>
               <div class="repeat-list" id="action-rows"></div>
-            </article>
-
-            <article class="editor-card">
-              <header class="editor-card__head">
-                <h2>本文のリンク語句</h2>
-                <button type="button" class="editor-mini-button" data-add="linkterm">＋ 追加</button>
-              </header>
-              <p class="editor-card__note">本文中の <code>[[語句]]</code> を、ここに登録したURLへリンクします。語句は完全一致です。</p>
-              <div class="repeat-list repeat-list--linkterms" id="linkterm-rows"></div>
-            </article>
-
-            <article class="editor-card">
-              <header class="editor-card__head">
-                <h2>編集履歴</h2>
-                <button type="button" class="editor-mini-button" data-add="history">＋ 追加</button>
-              </header>
-              <p class="editor-card__note">記事の「編集履歴」ダイアログに表示されます。新しい順に並べてください。</p>
-              <div class="repeat-list" id="history-rows"></div>
             </article>
           </section>
 
