@@ -55,9 +55,9 @@ PORT=8080 npm run dev
 │   ├── css/style.css       # 記事ページとHTML書き出しのスタイル
 │   ├── css/editor.css      # 編集モードのスタイル
 │   ├── css/guide.css       # 使い方ページのスタイル
-│   ├── js/render.js        # 記事・検索インデックス・HTML書き出しのレンダラー
+│   ├── js/render.js        # 記事・HTML書き出しのレンダラー
 │   ├── js/store.js         # content読込・localStorage・検証
-│   ├── js/main.js          # 記事の初期化、検索、編集モード起動
+│   ├── js/main.js          # 記事の初期化、編集モード起動
 │   ├── js/editor.js        # 編集モードの状態管理・自動保存・画像
 │   ├── js/exporter.js      # JSON / HTML / PNG / PDF 書き出し
 │   └── images/             # ロゴと挿絵（オリジナルSVG）
@@ -75,7 +75,7 @@ PORT=8080 npm run dev
 
 1. `assets/js/store.js` が `content/site.json`、`content/article.json` を `fetch` する。
 2. `localStorage` に保存済みの編集内容があれば、既定データへ深くマージする。
-3. `assets/js/render.js` が記事HTMLと検索インデックスを生成し、`assets/js/main.js` が `#site-root` へ描画する。
+3. `assets/js/render.js` が記事HTMLを生成し、`assets/js/main.js` が `#site-root` へ描画する。
 4. 編集モードは `index.html` 内の `#editor-overlay` にあり、ページ移動せずに開閉する。
 5. 編集内容は `localStorage` に自動保存され、閉じると記事が再描画される。
 
@@ -84,7 +84,7 @@ PORT=8080 npm run dev
 | オブジェクト | 役割 |
 | --- | --- |
 | `WikiStore` | 読込、保存、削除、検証、画像 data URL の除去 |
-| `WikiRender` | 記事・検索インデックス・HTML書き出し |
+| `WikiRender` | 記事・HTML書き出し |
 | `WikiExport` | JSON / HTML / PNG / PDF の生成とダウンロード |
 | `WikiSite` | 記事の初期化、再描画、編集モード起動 |
 | `WikiEditor` | 編集モードの開閉 |
@@ -152,7 +152,6 @@ PORT=8080 npm run dev
 | `updated` | string | 最終更新日（`YYYY-MM-DD`） |
 | `version` | string | バージョン表記 |
 | `sections` | array | 本文セクション（必須） |
-| `relatedTags` | string[] | 関連タグ |
 
 セクションの構造:
 
@@ -178,12 +177,12 @@ PORT=8080 npm run dev
 | --- | --- |
 | `site` | `name`, `badge`, `mark`, `tagline`, `description`, `lang`, `themeColor` |
 | `notice` | 上部の注意バー。`enabled`, `text`, `button`, `storageKey` |
-| `header` | 検索プレースホルダー、編集ボタン、ログインボタンの文言とリンク |
+| `header` | 検索欄（ダミー）のプレースホルダー、編集ボタン、ログインボタンの文言とリンク |
 | `footer` | `disclaimer`。フッターにはロゴと免責事項のみを表示 |
 
 `site.json` は編集モードからは編集できません。変更する場合はファイルを直接書き換えます。
 
-パンくずリスト・ハンバーガーメニュー・編集履歴は表示しません。ヘッダー左のハンバーガーボタンは見た目だけで、押しても何も起きません。旧データの `article.breadcrumb` / `article.history` / `site.menu` / `site.header.menuLabel` は読み込んでも無視されます。
+パンくずリスト・ハンバーガーメニュー・編集履歴は表示しません。ヘッダーの検索欄はダミーで、入力しても何も起きません（検索機能はありません）。ヘッダー左のハンバーガーボタンは見た目だけで、押しても何も起きません。旧データの `article.breadcrumb` / `article.history` / `article.relatedTags` / `site.menu` / `site.header.menuLabel` は読み込んでも無視されます。
 
 本文の下の「このサイトについて」欄は `assets/js/render.js` の固定文言（`ABOUT_TEXT`）で、必ず表示されます。編集モードやJSONからは変更できず、旧データの `article.about` は無視されます。
 
@@ -195,7 +194,7 @@ PORT=8080 npm run dev
 | `list` | `title?`, `items[]`, `ordered?` | 箇条書き。`ordered: true` で番号付き |
 | `code` | `language`, `filename`, `code` | コピー付きコードブロック |
 | `callout` | `tone`, `title?`, `text` | 注記。`tone` は `info` / `warn` / `parody` |
-| `tags` | `items[]` | 検索できるタグクラウド |
+| `tags` | `items[]` | タグの一覧（押しても何も起きない） |
 | `figure` | `src`, `alt`, `caption`, `credit?` | 画像とキャプション。`src` が空なら未設定表示 |
 | `quote` | `text`, `cite?` | 引用 |
 | `divider` | なし | 区切り線 |

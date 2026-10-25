@@ -68,31 +68,6 @@
       .trim();
   }
 
-  function plainBlock(block) {
-    switch (block.type) {
-      case "paragraph":
-        return plainText(block.text);
-      case "list":
-        return [block.title, ...(block.items || []).map(plainText)].filter(Boolean).join(" / ");
-      case "code":
-        return `${block.filename || ""} ${block.language || ""} ${block.code || ""}`.trim();
-      case "callout":
-        return [block.title, plainText(block.text)].filter(Boolean).join("：");
-      case "tags":
-        return (block.items || []).join(" / ");
-      case "figure":
-        return [block.alt, block.caption, block.credit].filter(Boolean).join(" / ");
-      case "quote":
-        return [plainText(block.text), block.cite].filter(Boolean).join(" / ");
-      default:
-        return "";
-    }
-  }
-
-  function sectionPlainText(section) {
-    return (section.blocks || []).map(plainBlock).filter(Boolean).join(" ");
-  }
-
   function numberSections(sections = []) {
     let major = 0;
     let minor = 0;
@@ -114,24 +89,6 @@
       }
       return { ...section, id: String(section.id || "").trim() || `section-${index + 1}`, number };
     });
-  }
-
-  function buildSearchIndex(article) {
-    const sections = numberSections(article?.sections || []);
-    return [
-      ...sections.map((section) => ({
-        type: "セクション",
-        title: `${section.number} ${section.title}`,
-        text: sectionPlainText(section),
-        href: `#${section.id}`,
-      })),
-      ...(article?.relatedTags || []).map((tag) => ({
-        type: "タグ",
-        title: tag,
-        text: `関連タグ「${tag}」`,
-        href: "#related-tags",
-      })),
-    ];
   }
 
   /* ------------------------------------------------------------------ *
@@ -177,7 +134,7 @@
 
       case "tags":
         return `<div class="tag-cloud">${(block.items || [])
-          .map((tag) => `<button type="button" class="tag" data-search="${attr(tag)}">#${esc(tag)}</button>`)
+          .map((tag) => `<span class="tag">#${esc(tag)}</span>`)
           .join("")}</div>`;
 
       case "figure":
@@ -322,7 +279,6 @@ ${blocks}
     const { article = {} } = state;
     const sections = article.sections || [];
     const blocks = sections.reduce((sum, section) => sum + (section.blocks?.length || 0), 0);
-    const tags = article.relatedTags || [];
 
     return `<aside class="sidebar" aria-label="補助情報">
         <section class="side-card">
@@ -330,7 +286,6 @@ ${blocks}
           <dl class="article-stats">
             <div><dt>セクション</dt><dd>${sections.length}</dd></div>
             <div><dt>ブロック</dt><dd>${blocks}</dd></div>
-            <div><dt>関連タグ</dt><dd>${tags.length}</dd></div>
             <div><dt>最終更新</dt><dd>${esc(article.updated || "—")}</dd></div>
           </dl>
           <p class="side-card__note side-card__note--tiny">本文データから自動計算しています。</p>
@@ -362,15 +317,14 @@ ${blocks}
         </a>
       </div>
 
-      <form class="search" id="site-search" role="search" action="index.html" method="get" autocomplete="off">
+      <div class="search" id="site-search">
         <label class="sr-only" for="search-input">${esc(header.searchLabel || "サイト内を検索")}</label>
         <div class="search__field">
           <svg class="search__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <input id="search-input" class="search__input" type="search" name="q" placeholder="${attr(header.searchPlaceholder || "けんさく...")}" aria-label="${attr(header.searchLabel || "サイト内を検索")}" aria-autocomplete="list" aria-controls="search-results" aria-expanded="false" spellcheck="false">
+          <input id="search-input" class="search__input" type="search" name="q" placeholder="${attr(header.searchPlaceholder || "けんさく...")}" aria-label="${attr(header.searchLabel || "サイト内を検索")}" autocomplete="off" spellcheck="false">
           <kbd class="search__key" aria-hidden="true">/</kbd>
         </div>
-        <div class="search__results" id="search-results" role="listbox" aria-label="検索結果" hidden></div>
-      </form>
+      </div>
 
       <div class="site-header__right">
         <a class="button button--white header-submit" href="${attr(submitHref)}"${openEditorAttr(submitHref)}>
@@ -476,7 +430,6 @@ ${renderExportBody(state)}
     inline,
     plainText,
     numberSections,
-    buildSearchIndex,
     renderSite,
     renderExportBody,
     renderExportDocument,

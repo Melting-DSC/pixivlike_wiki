@@ -402,102 +402,6 @@ a:hover {
   font-size: 10px;
 }
 
-.search__results {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  left: 0;
-  z-index: 90;
-  max-height: min(430px, calc(100vh - 140px));
-  overflow-y: auto;
-  padding: 6px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #fff;
-  color: var(--text-2);
-  box-shadow: var(--shadow-float);
-}
-
-.search-result {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
-  gap: 8px;
-  align-items: start;
-  padding: 8px;
-  border-radius: 7px;
-  color: var(--text-2);
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.search-result:hover,
-.search-result.is-active {
-  background: #f0f8ff;
-  text-decoration: none;
-}
-
-.search-result__type {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: #eef7ff;
-  color: #0076c3;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.1;
-  text-align: center;
-}
-
-.search-result[data-type="カテゴリ"] .search-result__type {
-  background: #f1f8f2;
-  color: #267a3e;
-}
-
-.search-result[data-type="タグ"] .search-result__type {
-  background: #fff6e8;
-  color: #a85a00;
-}
-
-.search-result__title {
-  display: block;
-  overflow: hidden;
-  color: var(--text-1);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.5;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.search-result__text {
-  display: -webkit-box;
-  overflow: hidden;
-  margin-top: 1px;
-  color: var(--text-3);
-  font-size: 11px;
-  line-height: 1.5;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.search__empty {
-  padding: 18px 14px;
-  color: var(--text-3);
-  font-size: 12px;
-  text-align: center;
-}
-
-.search__hint {
-  padding: 8px 12px 5px;
-  color: var(--text-4);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-
 /* ==========================================================================
    Page frame
    ========================================================================== */
@@ -1140,13 +1044,6 @@ a:hover {
   color: #0076c3;
   font-size: 12px;
   line-height: 1.7;
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.tag:hover {
-  border-color: #9dd4ff;
-  background: #fff;
 }
 
 /* Figure / quote / divider ------------------------------------------- */
@@ -1680,7 +1577,7 @@ a.category-chip:hover {
 }
 
 /* ==========================================================================
-   Flash highlight when jumping from search
+   Flash highlight when landing on a section link
    ========================================================================== */
 
 .is-flash {

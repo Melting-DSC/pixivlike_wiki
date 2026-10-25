@@ -279,7 +279,6 @@
   function updateStats() {
     const sections = state.article?.sections ?? [];
     const blocks = sections.reduce((sum, section) => sum + (section.blocks?.length || 0), 0);
-    const tags = state.article?.relatedTags?.length ?? 0;
 
     const setText = (selector, value) => {
       const element = $(selector);
@@ -288,7 +287,6 @@
 
     setText("#stat-sections", sections.length);
     setText("#stat-blocks", blocks);
-    setText("#stat-tags", tags);
     setText("#section-count-label", sections.length);
 
     for (const node of $$('[data-count="sections"]')) node.textContent = sections.length;
@@ -357,7 +355,7 @@
       <span class="field__label">リンク用の名前（任意）</span>
       <input type="text" data-path="article.sections.${sectionIndex}.id" value="${attr(section.id)}" placeholder="section-${sectionIndex + 1}" aria-label="セクション ${sectionIndex + 1} のリンク用の名前">
     </label>
-    <p>目次や検索からこのセクションへ移動するときに使われます。半角英数字とハイフン（-）で、ほかのセクションと重ならない名前にしてください。ふだんは変更不要です。</p>
+    <p>目次からこのセクションへ移動するときに使われます。半角英数字とハイフン（-）で、ほかのセクションと重ならない名前にしてください。ふだんは変更不要です。</p>
   </div>
   <div class="block-list">${blockHTML}</div>
   <footer class="section-editor__foot">
@@ -575,7 +573,6 @@
     setPath(state, path, fieldValue(field));
 
     if (path.startsWith("article.hero.")) updateHeroPreview();
-    if (path === "article.relatedTags") updateStats();
 
     markDirty();
   }
@@ -624,7 +621,6 @@
     const article = state.article;
 
     if (article) {
-      article.relatedTags = (article.relatedTags ?? []).filter(Boolean);
       article.categories = (article.categories ?? []).filter(Boolean);
       article.actions = (article.actions ?? []).filter((row) => String(row.label ?? "").trim());
       article.sections = (article.sections ?? []).map((section) => ({

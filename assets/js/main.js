@@ -2,7 +2,8 @@
    Article page bootstrap + interactions.
 
    Loads content (defaults + localStorage overlay), renders the article in the
-   browser, and wires up search, toasts and the editor trigger.
+   browser, and wires up toasts and the editor trigger. The header search box
+   is a dummy: typing in it does nothing.
    Everything is client-side; there is no build step or save API.
    ========================================================================== */
 
@@ -24,9 +25,6 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
-
-  const normalize = (value = "") =>
-    String(value).normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
 
   const getStorage = (key) => {
     try {
@@ -53,7 +51,6 @@
   };
 
   let state = null;
-  let searchItems = [];
   let controller = null;
   let toastTimer = 0;
 
@@ -107,11 +104,6 @@
     controller = new AbortController();
 
     root.innerHTML = WikiRender.renderSite(state);
-    searchItems = WikiRender.buildSearchIndex(state.article).map((item) => ({
-      ...item,
-      _title: normalize(item.title),
-      _text: normalize(item.text),
-    }));
 
     updateDocumentMeta();
     bindInteractions(controller.signal);
@@ -140,231 +132,6 @@
   <p>通信状態を確認して、ページを再読み込みしてください。パソコンに保存したファイルを直接開いた場合は表示できないため、公開されているURLから開いてください。</p>
   <p><a class="button button--blue" href="">再読み込み</a> <a class="button button--soft" href="guide.html">使い方を見る</a></p>
 </main>`;
-  }
-
-  /* ------------------------------------------------------------------ *
-   * Search
-   * ------------------------------------------------------------------ */
-
-  function snippet(text, query) {
-    const flat = String(text || "").replace(/\s+/g, " ").trim();
-    if (!flat) return "";
-    const index = normalize(flat).indexOf(normalize(query));
-    const start = Math.max(0, index > 22 ? index - 22 : 0);
-    const end = Math.min(flat.length, start + 92);
-    return `${start > 0 ? "…" : ""}${flat.slice(start, end)}${end < flat.length ? "…" : ""}`;
-  }
-
-  function buildSearch(signal) {
-    const form = $("#site-search");
-    const input = $("#search-input");
-    const results = $("#search-results");
-    if (!form || !input || !results) return;
-
-    let currentResults = [];
-    let activeResult = -1;
-    let inputTimer = 0;
-
-    const close = () => {
-      results.hidden = true;
-      input.setAttribute("aria-expanded", "false");
-      input.removeAttribute("aria-activedescendant");
-      activeResult = -1;
-    };
-
-    const setActive = (index) => {
-      const nodes = $$(".search-result", results);
-      if (!nodes.length) return;
-      activeResult = Math.max(0, Math.min(index, nodes.length - 1));
-      nodes.forEach((node, nodeIndex) => {
-        const active = nodeIndex === activeResult;
-        node.classList.toggle("is-active", active);
-        node.setAttribute("aria-selected", active ? "true" : "false");
-        if (active) {
-          node.id = `search-result-${nodeIndex}`;
-          input.setAttribute("aria-activedescendant", node.id);
-          node.scrollIntoView({ block: "nearest" });
-        }
-      });
-    };
-
-    const renderResults = (query) => {
-      const q = normalize(query);
-      if (!q) {
-        currentResults = [];
-        close();
-        return [];
-      }
-
-      const seen = new Set();
-      currentResults = searchItems
-        .map((item) => {
-          let score = 0;
-          if (item._title === q) score = 120;
-          else if (item._title.startsWith(q)) score = 100;
-          else if (item._title.includes(q)) score = 70;
-          else if (item._text.includes(q)) score = 30;
-          return { item, score };
-        })
-        .filter((entry) => entry.score > 0)
-        .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title, "ja"))
-        .map((entry) => entry.item)
-        .filter((item) => {
-          const key = `${item.type}:${item.title}:${item.href}`;
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        })
-        .slice(0, 9);
-
-      if (!currentResults.length) {
-        results.innerHTML = `<div class="search__empty">「${escapeHTML(query)}」に一致する項目はありません。<br>別の言葉で試してみてください。</div>`;
-        results.hidden = false;
-        input.setAttribute("aria-expanded", "true");
-        activeResult = -1;
-        return [];
-      }
-
-      results.innerHTML = [
-        `<div class="search__hint">検索結果 ${currentResults.length}件</div>`,
-        ...currentResults.map(
-          (item, index) => `<a class="search-result" href="${escapeHTML(item.href)}" data-type="${escapeHTML(item.type)}" data-index="${index}" role="option" aria-selected="false">
-  <span class="search-result__type">${escapeHTML(item.type)}</span>
-  <span>
-    <span class="search-result__title">${escapeHTML(item.title)}</span>
-    <span class="search-result__text">${escapeHTML(snippet(item.text, query))}</span>
-  </span>
-</a>`,
-        ),
-      ].join("");
-
-      results.hidden = false;
-      input.setAttribute("aria-expanded", "true");
-      activeResult = -1;
-      input.removeAttribute("aria-activedescendant");
-      return currentResults;
-    };
-
-    const navigateTo = (href) => {
-      if (!href) return;
-      if (/^https?:\/\//i.test(href)) {
-        window.open(href, "_blank", "noopener,noreferrer");
-        return;
-      }
-      if (href.startsWith("#")) {
-        const id = decodeURIComponent(href.slice(1));
-        const target = document.getElementById(id);
-        if (target) {
-          window.history.pushState(null, "", href);
-          target.scrollIntoView({ behavior: scrollBehavior, block: "start" });
-          flashElement(target);
-        }
-      }
-    };
-
-    input.addEventListener(
-      "input",
-      () => {
-        window.clearTimeout(inputTimer);
-        inputTimer = window.setTimeout(() => renderResults(input.value), 70);
-      },
-      { signal },
-    );
-
-    input.addEventListener(
-      "focus",
-      () => {
-        if (input.value.trim()) renderResults(input.value);
-      },
-      { signal },
-    );
-
-    input.addEventListener(
-      "keydown",
-      (event) => {
-        const nodes = $$(".search-result", results);
-        if (event.key === "ArrowDown") {
-          event.preventDefault();
-          if (results.hidden) renderResults(input.value);
-          if (nodes.length) setActive(activeResult < 0 ? 0 : activeResult + 1);
-        } else if (event.key === "ArrowUp") {
-          event.preventDefault();
-          if (results.hidden) renderResults(input.value);
-          if (nodes.length) setActive(activeResult <= 0 ? nodes.length - 1 : activeResult - 1);
-        } else if (event.key === "Escape") {
-          close();
-        } else if (event.key === "Tab") {
-          close();
-        }
-      },
-      { signal },
-    );
-
-    form.addEventListener(
-      "submit",
-      (event) => {
-        event.preventDefault();
-        const query = input.value.trim();
-        if (!query) return;
-        const found = currentResults.length ? currentResults : renderResults(query);
-        if (found.length) {
-          const first = found[Math.max(0, activeResult)] || found[0];
-          close();
-          navigateTo(first.href);
-        } else {
-          showToast(`「${query}」に一致する項目はありませんでした。`);
-        }
-      },
-      { signal },
-    );
-
-    results.addEventListener(
-      "click",
-      (event) => {
-        const result = event.target.closest(".search-result");
-        if (!result) return;
-        event.preventDefault();
-        close();
-        navigateTo(result.getAttribute("href"));
-        input.blur();
-      },
-      { signal },
-    );
-
-    document.addEventListener(
-      "click",
-      (event) => {
-        if (!form.contains(event.target)) close();
-      },
-      { signal },
-    );
-
-    document.addEventListener(
-      "keydown",
-      (event) => {
-        const target = event.target;
-        const typing =
-          target instanceof HTMLElement &&
-          (target.tagName === "INPUT" ||
-            target.tagName === "TEXTAREA" ||
-            target.tagName === "SELECT" ||
-            target.isContentEditable);
-        if (event.key === "/" && !typing && !event.metaKey && !event.ctrlKey && !event.altKey) {
-          event.preventDefault();
-          input.focus();
-          input.select();
-        }
-      },
-      { signal },
-    );
-
-    const queryParam = new URLSearchParams(window.location.search).get("q");
-    if (queryParam) {
-      input.value = queryParam;
-      renderResults(queryParam);
-    }
-
-    return { input, renderResults };
   }
 
   /* ------------------------------------------------------------------ *
@@ -501,9 +268,6 @@
       signal,
     });
 
-    /* Search */
-    const search = buildSearch(signal);
-
     /* Delegated actions */
     document.addEventListener(
       "click",
@@ -525,15 +289,6 @@
           const code = copyButton.closest(".code-block")?.querySelector("pre code")?.innerText ?? "";
           const ok = await copyText(code);
           showToast(ok ? "コードをコピーしました。" : "コピーできませんでした。");
-          return;
-        }
-
-        const searchTrigger = event.target.closest("[data-search]");
-        if (searchTrigger && search && !searchTrigger.closest("#site-search")) {
-          event.preventDefault();
-          search.input.value = searchTrigger.dataset.search || "";
-          search.input.focus();
-          search.renderResults(search.input.value);
           return;
         }
 

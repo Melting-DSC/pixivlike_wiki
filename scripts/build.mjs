@@ -87,7 +87,6 @@ for (const section of article.sections) {
 }
 
 const totalBlocks = article.sections.reduce((sum, section) => sum + (section.blocks?.length || 0), 0);
-const tags = article.relatedTags || [];
 
 if (warnings.length) {
   console.warn("\n⚠  警告");
@@ -96,5 +95,4 @@ if (warnings.length) {
 
 console.log("✓ コンテンツを検証しました（記事はブラウザで描画されます）");
 console.log(`  記事: ${article.title} / セクション: ${article.sections.length} / ブロック: ${totalBlocks}`);
-console.log(`  タグ: ${tags.length}`);
 if (warnings.length) console.log(`  警告: ${new Set(warnings).size}件`);
