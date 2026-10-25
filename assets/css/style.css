@@ -476,6 +476,15 @@ a:hover {
   margin-bottom: 20px;
 }
 
+.article-tagline {
+  margin: 0 0 20px;
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
 .hero {
   position: relative;
   flex: 0 0 240px;
