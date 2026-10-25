@@ -1,0 +1,176 @@
+{
+  "title": "カテゴリ一覧",
+  "description": "この記事が属するカテゴリと、同じカテゴリに収録されている項目です。カテゴリ名・説明・項目はすべてJSONで編集できます。",
+  "groups": [
+    {
+      "id": "general",
+      "name": "一般",
+      "color": "#5b7c99",
+      "description": "物事の入口。まずはここから。",
+      "items": [
+        {
+          "name": "C言語",
+          "href": "#top",
+          "current": true
+        },
+        {
+          "name": "UNIX",
+          "href": "#overview"
+        },
+        {
+          "name": "プログラミング言語",
+          "href": "#overview"
+        },
+        {
+          "name": "オペレーティングシステム",
+          "href": "#overview"
+        },
+        {
+          "name": "デバイスドライバ",
+          "href": "#features"
+        },
+        {
+          "name": "組み込みシステム",
+          "href": "#features"
+        }
+      ]
+    },
+    {
+      "id": "languages",
+      "name": "プログラミング言語",
+      "color": "#2f7fbf",
+      "description": "計算機に仕事をさせるための言葉たち。",
+      "items": [
+        {
+          "name": "C言語",
+          "href": "#top",
+          "current": true
+        },
+        {
+          "name": "C++",
+          "href": "#derived"
+        },
+        {
+          "name": "C#",
+          "href": "#derived"
+        },
+        {
+          "name": "D言語",
+          "href": "#derived"
+        },
+        {
+          "name": "Java",
+          "href": "#derived"
+        },
+        {
+          "name": "Rust",
+          "href": "#derived"
+        },
+        {
+          "name": "Objective-C",
+          "href": "#extended"
+        },
+        {
+          "name": "Python",
+          "href": "#derived"
+        },
+        {
+          "name": "Ruby",
+          "href": "#derived"
+        }
+      ]
+    },
+    {
+      "id": "concepts",
+      "name": "プログラミング概念",
+      "color": "#2f8f83",
+      "description": "コードの裏側にある考え方。",
+      "items": [
+        {
+          "name": "ポインタ",
+          "href": "#features"
+        },
+        {
+          "name": "メモリ管理",
+          "href": "#features"
+        },
+        {
+          "name": "未定義動作",
+          "href": "#features"
+        },
+        {
+          "name": "バッファオーバーフロー",
+          "href": "#features"
+        },
+        {
+          "name": "ガベージコレクション",
+          "href": "#features"
+        },
+        {
+          "name": "コンパイル",
+          "href": "#overview"
+        }
+      ]
+    },
+    {
+      "id": "embedded",
+      "name": "組み込み・低レイヤ",
+      "color": "#a1762a",
+      "description": "ハードウェアとソフトウェアの境界線。",
+      "items": [
+        {
+          "name": "組み込みシステム",
+          "href": "#features"
+        },
+        {
+          "name": "リアルタイムOS",
+          "soon": true
+        },
+        {
+          "name": "マイコン",
+          "soon": true
+        },
+        {
+          "name": "レジスタ",
+          "href": "#features"
+        },
+        {
+          "name": "ビット演算",
+          "href": "#features"
+        }
+      ]
+    },
+    {
+      "id": "culture",
+      "name": "文化・その他",
+      "color": "#b25b7a",
+      "description": "言語を囲む人と現象。",
+      "items": [
+        {
+          "name": "ハッカー",
+          "href": "#features"
+        },
+        {
+          "name": "アスキーアート",
+          "href": "#features"
+        },
+        {
+          "name": "Hello World",
+          "href": "#features"
+        },
+        {
+          "name": "セグメンテーションフォールト",
+          "href": "#features"
+        },
+        {
+          "name": "闇",
+          "href": "#related-tags"
+        },
+        {
+          "name": "パロディ",
+          "href": "#overview"
+        }
+      ]
+    }
+  ]
+}

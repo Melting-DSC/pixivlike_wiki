@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>C言語 (しーげんご)とは【うちのこ百科事典】</title>
+  <meta name="description" content="1970年代に生まれ、機械と人間のあいだを今も走り続けるプログラミング言語。ポインタと未定義動作という香辛料が効いた、玄人好みの味つけが特徴。">
+  <meta name="theme-color" content="#314e6f">
+  <meta name="color-scheme" content="light">
+  <meta name="robots" content="noindex, nofollow, noarchive, noimageindex">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="C言語">
+  <meta property="og:description" content="1970年代に生まれ、機械と人間のあいだを今も走り続けるプログラミング言語。ポインタと未定義動作という香辛料が効いた、玄人好みの味つけが特徴。">
+  <meta property="og:image" content="assets/images/c-language.svg">
+  <meta property="og:site_name" content="うちのこ百科事典">
+  <link rel="icon" href="assets/images/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "C言語",
+    "description": "1970年代に生まれ、機械と人間のあいだを今も走り続けるプログラミング言語。ポインタと未定義動作という香辛料が効いた、玄人好みの味つけが特徴。",
+    "dateModified": "2026-10-25",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "うちのこ百科事典"
+    }
+  }
+  </script>
+</head>
+<body data-article-title="C言語">
+  <a class="skip-link" href="#article-name">本文へスキップ</a>
+
+  <div class="parody-notice" data-notice data-storage-key="pixpedia-parody-notice-v1">
+    <p>このサイトは「ピクシブ百科事典」の外観を参考にした非公式パロディです。実在の記事・画像・ロゴとは関係ありません。</p>
+    <button type="button" class="parody-notice__close" data-notice-close>了解</button>
+  </div>
+
+  <header class="site-header" id="site-header">
+    <div class="site-header__inner">
+      <div class="site-header__left">
+        <button type="button" class="icon-button menu-open" data-open-menu aria-label="メニューを開く" aria-controls="drawer-overlay" aria-expanded="false">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <a class="brand" href="#top" aria-label="うちのこ百科事典（パロディ）">
+          <img class="brand__mark" src="assets/images/mark.svg" alt="" width="32" height="32">
+          <span class="brand__name">うちのこ百科事典</span>
+          <span class="brand__badge">PARODY</span>
+        </a>
+      </div>
+
+      <form class="search" id="site-search" role="search" action="index.html" method="get" autocomplete="off">
+        <label class="sr-only" for="search-input">サイト内を検索</label>
+        <div class="search__field">
+          <svg class="search__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="search-input" class="search__input" type="search" name="q" placeholder="けんさく..." aria-label="サイト内を検索" aria-autocomplete="list" aria-controls="search-results" aria-expanded="false" spellcheck="false">
+          <kbd class="search__key" aria-hidden="true">/</kbd>
+        </div>
+        <div class="search__results" id="search-results" role="listbox" aria-label="検索結果" hidden></div>
+      </form>
+
+      <div class="site-header__right">
+        <a class="button button--white header-submit" href="editor.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.8 2.8 0 0 0-4-4L4 16v4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m13.5 6.5 4 4" stroke="currentColor" stroke-width="2"/></svg>
+          <span class="header-submit__long">記事を投稿</span>
+          <span class="header-submit__short">投稿</span>
+        </a>
+        <button type="button" class="button button--blue" data-action="login" data-message="ここはパロディサイトなので、登録もログインも不要です。どうぞごゆっくり。">登録/ログイン</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="spotlight" aria-label="注目の項目">
+  <div class="spotlight__inner">
+    <span class="spotlight__label">注目</span>
+    <div class="spotlight__items"><button type="button" class="spotlight__link" data-search="C言語">C言語</button><button type="button" class="spotlight__link" data-search="ポインタ">ポインタ</button><button type="button" class="spotlight__link" data-search="未定義動作">未定義動作</button><button type="button" class="spotlight__link" data-search="Hello">Hello World</button><button type="button" class="spotlight__link" data-search="組み込み">組み込み</button><a class="spotlight__link" href="#categories">カテゴリ一覧</a><a class="spotlight__link" href="#related-tags">関連タグ</a></div>
+  </div>
+</div>
+
+  <main class="page" id="main">
+    <nav class="breadcrumb" aria-label="パンくずリスト"><a href="#top">うちのこ百科事典</a><span class="breadcrumb__sep" aria-hidden="true">›</span><a href="#category-general">一般</a><span class="breadcrumb__sep" aria-hidden="true">›</span><a href="#category-languages">プログラミング</a><span class="breadcrumb__sep" aria-hidden="true">›</span><a href="#category-concepts">言語</a><span class="breadcrumb__sep" aria-hidden="true">›</span><span aria-current="page">C言語</span></nav>
+
+    <div class="layout">
+      <article class="article" id="top">
+        <header class="article-head">
+          <figure class="hero">
+            <a class="hero__link" href="#about" aria-label="C言語アイコン（パロディ）">
+              <img class="hero__image" src="assets/images/c-language.svg" alt="青い六角形と大きなCの文字で描かれたC言語のアイコン" width="240" height="240" fetchpriority="high">
+              <span class="hero__overlay">
+                <span class="hero__caption">C言語アイコン（パロディ）</span>
+                <span class="hero__credit">by 百科事典編集部</span>
+              </span>
+            </a>
+          </figure>
+
+          <div class="article-head__main">
+            <ul class="article-categories" aria-label="この記事のカテゴリ"><li><a class="category-tag" href="#category-general">一般</a></li><li><a class="category-tag" href="#category-languages">プログラミング言語</a></li><li><a class="category-tag" href="#category-culture">文化・その他</a></li></ul>
+            <div class="title-row">
+              <h1 class="article-title" id="article-name">C言語</h1>
+              <button type="button" class="bookmark" data-action="bookmark" aria-pressed="false" aria-label="この記事を保存">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21l-6-4-6 4V4.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                <span class="bookmark__label">保存</span>
+              </button>
+            </div>
+            <p class="article-reading">しーげんご</p>
+            <p class="article-summary">1970年代に生まれ、機械と人間のあいだを今も走り続けるプログラミング言語。ポインタと未定義動作という香辛料が効いた、玄人好みの味つけが特徴。</p>
+            <ul class="article-actions"><li><a class="article-action is-primary" href="editor.html"><span>この記事を編集する</span><span class="article-action__chevron" aria-hidden="true">›</span></a></li><li><a class="article-action" href="#categories"><span>カテゴリ一覧を見る</span><span class="article-action__chevron" aria-hidden="true">›</span></a></li><li><a class="article-action" href="#related-tags"><span>関連タグをたどる</span><span class="article-action__chevron" aria-hidden="true">›</span></a></li><li><a class="article-action" href="#about"><span>このサイトについて</span><span class="article-action__chevron" aria-hidden="true">›</span></a></li></ul>
+          </div>
+        </header>
+
+        <div class="article-meta">
+          <span>最終更新：2026-10-25</span>
+          <span class="article-meta__sep" aria-hidden="true">・</span>
+          <span>ver. parody-1.0</span>
+          <span class="article-meta__sep" aria-hidden="true">・</span>
+          <button type="button" class="text-button" data-action="history">編集履歴</button>
+          <span class="article-meta__spacer"></span>
+          <span class="parody-pill">非公式パロディ</span>
+        </div>
+
+        <details class="toc" open>
+          <summary><span>目次</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+          <ol class="toc__list">
+            <li class="toc__item">
+  <a href="#overview"><span class="toc__num">1</span><span>概要</span></a>
+</li>
+<li class="toc__item">
+  <a href="#features"><span class="toc__num">2</span><span>特徴</span></a>
+</li>
+<li class="toc__item">
+  <a href="#derived"><span class="toc__num">3</span><span>派生言語</span></a>
+</li>
+<li class="toc__item toc__item--sub">
+  <a href="#extended"><span class="toc__num">3.1</span><span>拡張言語</span></a>
+</li>
+<li class="toc__item">
+  <a href="#related-tags"><span class="toc__num">4</span><span>関連タグ</span></a>
+</li>
+            <li class="toc__item toc__item--extra"><a href="#categories"><span class="toc__num">＋</span><span>カテゴリ一覧</span></a></li>
+          </ol>
+        </details>
+
+        <div class="article-body">
+          <section class="section" id="overview" data-section>
+  <div class="section__heading">
+    <h2 class="section__title">概要<a class="section__anchor" href="#overview" aria-label="概要へのリンク" title="この節へのリンク">#</a></h2>
+    <span class="section__rule" aria-hidden="true"></span>
+  </div>
+  <div class="section__content">
+<p>C言語は1972年、AT&amp;Tベル研究所で<a href="https://ja.wikipedia.org/wiki/UNIX" target="_blank" rel="noopener noreferrer">UNIX</a>を別のコンピュータへ移植しやすくするために生まれた<a href="#categories">プログラミング言語</a>である。設計にはDennis M. RitchieとBrian W. Kernighanらが携わった。</p>
+<p>得意分野は<a href="https://ja.wikipedia.org/wiki/%E3%82%AA%E3%83%9A%E3%83%AC%E3%83%BC%E3%83%86%E3%82%A3%E3%83%B3%E3%82%B0%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0" target="_blank" rel="noopener noreferrer">OS</a>や<a href="#features">デバイスドライバ</a>など、ハードウェアに近いソフトウェア。ところが移植性の高さと実行速度のバランスが絶妙で、アプリケーションから<a href="#category-embedded">組み込みシステム</a>まで、気づけばあらゆる場所にC言語がいる。</p>
+<p>現在ではC言語の上に新しい言語が積み上げられ、C言語自身は「土台」や「共通語」のような立場になった。とはいえ、土台がなければ何も建たない。縁の下の力持ちにして、舞台の主役でもあるのだ。</p>
+<aside class="callout callout--info">
+  <span class="callout__icon" aria-hidden="true">i</span>
+  <div class="callout__body">
+    <p class="callout__title">このページについて</p>
+    <p>ここはピクシブ百科事典の外観を参考にした非公式パロディです。実在の人物・団体・プログラミング言語への愛と敬意を込めて書いています。</p>
+  </div>
+</aside>
+  </div>
+</section>
+<section class="section" id="features" data-section>
+  <div class="section__heading">
+    <h2 class="section__title">特徴<a class="section__anchor" href="#features" aria-label="特徴へのリンク" title="この節へのリンク">#</a></h2>
+    <span class="section__rule" aria-hidden="true"></span>
+  </div>
+  <div class="section__content">
+<p>最大の特徴は、ハードウェア寄りの低レベルな記述ができること。<a href="https://ja.wikipedia.org/wiki/%E3%83%9D%E3%82%A4%E3%83%B3%E3%82%BF_(%E3%83%97%E3%83%AD%E3%82%B0%E3%83%A9%E3%83%9F%E3%83%B3%E3%82%B0)" target="_blank" rel="noopener noreferrer">ポインタ</a>でメモリを直接つつき、ビットを数え、レジスタの気持ちを想像できる。プログラマーにできることを制限しない自由さは<a href="#related-tags">ハッカー</a>に好まれ、その自由さがバッファオーバーフローや<a href="https://ja.wikipedia.org/wiki/%E6%9C%AA%E5%AE%9A%E7%BE%A9%E5%8B%95%E4%BD%9C" target="_blank" rel="noopener noreferrer">未定義動作</a>の温床にもなる。</p>
+<p>文法は比較的簡素で、標準ライブラリも控えめ。文字列操作のたびに自分で長さを管理し、メモリを確保したら自分で解放する。<a href="https://ja.wikipedia.org/wiki/Java" target="_blank" rel="noopener noreferrer">Java</a>や<a href="https://ja.wikipedia.org/wiki/C_Sharp" target="_blank" rel="noopener noreferrer">C#</a>のようなガベージコレクションは標準では用意されていない。自由と引き換えに、面倒も一緒についてくるわけである。</p>
+<figure class="article-figure">
+  <img src="assets/images/pointer-map.svg" alt="変数xの値42と、そのアドレスを指すポインタpの関係を示した図" loading="lazy">
+  <figcaption><span>ポインタは「値」ではなく「住所」を見ている（イメージ）。</span><span class="article-figure__credit">図：百科事典編集部</span></figcaption>
+</figure>
+<p>自由すぎるがゆえに、一見<a href="#category-culture">アスキーアート</a>にしか見えないコードも書ける。保守やデバッグが難しくなりがちだが、そこがいいという声も多い。可読性は、しばしば実行速度と交換される。</p>
+<p>初心者への優しさはあまり考慮されていない。大学の講義でC言語に挫折した経験を持つ人も少なくないだろう。だが、その厳しさを乗り越えた先には、コンピュータの仕組みが少し見える世界が待っている。</p>
+<div class="code-block">
+  <div class="code-block__bar"><span class="code-block__file">hello.c</span><span class="code-block__language">c</span><button type="button" class="code-block__copy" data-copy>コピー</button></div>
+  <pre tabindex="0"><code>#include &lt;stdio.h&gt;
+
+int main(void) {
+    const char *message = &quot;Hello, 世界&quot;;
+    puts(message);
+    return 0;
+}</code></pre>
+</div>
+<aside class="callout callout--warn">
+  <span class="callout__icon" aria-hidden="true">!</span>
+  <div class="callout__body">
+    <p class="callout__title">実行する前に</p>
+    <p>上のコードは、環境によっては日本語が化けたり、警告が出たり、何も起きなかったりします。動けば勝ち、動かなければ勉強。それがC言語。</p>
+  </div>
+</aside>
+<p class="block-label">C言語あるある</p><ul class="body-list"><li>セミコロンを忘れて3分溶かす。</li>
+<li>ポインタの型が合わずに丸一日溶かす。</li>
+<li><code>printf</code> を入れたら直る（気がする）。</li>
+<li>「undefined behavior」で検索する回数が増える。</li>
+<li>最後は <code>-Wall -Wextra</code> に謝る。</li></ul>
+  </div>
+</section>
+<section class="section" id="derived" data-section>
+  <div class="section__heading">
+    <h2 class="section__title">派生言語<a class="section__anchor" href="#derived" aria-label="派生言語へのリンク" title="この節へのリンク">#</a></h2>
+    <span class="section__rule" aria-hidden="true"></span>
+  </div>
+  <div class="section__content">
+<p>C言語の文法や設計思想を受け継いだ言語は多い。直接の派生言語から、文法だけを参考にしたものまで、ここでは一部を紹介する。</p>
+<ul class="body-list"><li><a href="https://ja.wikipedia.org/wiki/C%2B%2B" target="_blank" rel="noopener noreferrer">C++</a> — C言語にオブジェクト指向などを足した、とても長い付き合いになる言語。</li>
+<li><a href="https://ja.wikipedia.org/wiki/C_Sharp" target="_blank" rel="noopener noreferrer">C#</a> — Microsoft製。名前は似ているが、かなり別の言語。</li>
+<li><a href="https://ja.wikipedia.org/wiki/D%E8%A8%80%E8%AA%9E" target="_blank" rel="noopener noreferrer">D言語</a> — C++の反省を踏まえた、近代的なシステムプログラミング言語。</li>
+<li><a href="https://ja.wikipedia.org/wiki/Java" target="_blank" rel="noopener noreferrer">Java</a> — 仮想マシン上で動く。C言語の代役を務めた時代がある。</li>
+<li><a href="https://ja.wikipedia.org/wiki/Rust_(%E3%83%97%E3%83%AD%E3%82%B0%E3%83%A9%E3%83%9F%E3%83%B3%E3%82%B0%E8%A8%80%E8%AA%9E)" target="_blank" rel="noopener noreferrer">Rust</a> — 借用チェッカーに怒られながらメモリ安全を学ぶ言語。直接の派生ではないが、よく比較される。</li></ul>
+  </div>
+</section>
+<section class="section section--sub" id="extended" data-section>
+  <div class="section__heading">
+    <h3 class="section__title">拡張言語<a class="section__anchor" href="#extended" aria-label="拡張言語へのリンク" title="この節へのリンク">#</a></h3>
+    
+  </div>
+  <div class="section__content">
+<p>C言語の構文を土台に、用途を絞って拡張した言語もある。</p>
+<ul class="body-list"><li><a href="https://ja.wikipedia.org/wiki/Objective-C" target="_blank" rel="noopener noreferrer">Objective-C</a> — Appleの世界を支えた、C言語とSmalltalkのハイブリッド。</li>
+<li><a href="https://ja.wikipedia.org/wiki/CUDA" target="_blank" rel="noopener noreferrer">CUDA</a> — GPUで並列計算をするための拡張。C++寄り。</li></ul>
+  </div>
+</section>
+<section class="section" id="related-tags" data-section>
+  <div class="section__heading">
+    <h2 class="section__title">関連タグ<a class="section__anchor" href="#related-tags" aria-label="関連タグへのリンク" title="この節へのリンク">#</a></h2>
+    <span class="section__rule" aria-hidden="true"></span>
+  </div>
+  <div class="section__content">
+<p>ここから先は沼。関連タグをたどると、C言語の別の顔が見えてくる。</p>
+<div class="tag-cloud"><button type="button" class="tag" data-search="プログラミング言語">#プログラミング言語</button><button type="button" class="tag" data-search="組み込みシステム">#組み込みシステム</button><button type="button" class="tag" data-search="ポインタ">#ポインタ</button><button type="button" class="tag" data-search="未定義動作">#未定義動作</button><button type="button" class="tag" data-search="セグメンテーションフォールト">#セグメンテーションフォールト</button><button type="button" class="tag" data-search="メモリ管理">#メモリ管理</button><button type="button" class="tag" data-search="Hello World">#Hello World</button><button type="button" class="tag" data-search="闇">#闇</button><button type="button" class="tag" data-search="パロディ">#パロディ</button></div>
+<p>「闇」タグが気になった人は、まず <code>-Wall -Wextra -Werror</code> でコンパイルしてみよう。闇は、たいてい警告として先に教えてくれる。</p>
+  </div>
+</section>
+        </div>
+
+        <section class="categories" id="categories" aria-labelledby="categories-title">
+          <div class="section__heading">
+            <h2 class="section__title" id="categories-title">カテゴリ一覧<a class="section__anchor" href="#categories" aria-label="カテゴリ一覧へのリンク">#</a></h2>
+            <span class="section__rule" aria-hidden="true"></span>
+          </div>
+          <p class="categories__lead">全5カテゴリ / 32項目（延べ、ユニーク30項目）。この記事が属するカテゴリと、同じカテゴリに収録されている項目です。カテゴリ名・説明・項目はすべてJSONで編集できます。</p>
+          <div class="category-grid"><article class="category-card" id="category-general" style="--category-color:#5b7c99">
+  <header class="category-card__head">
+    <span class="category-card__dot" aria-hidden="true"></span>
+    <h3>一般</h3>
+    <span class="count-badge">6項目</span>
+  </header>
+  <p class="category-card__description">物事の入口。まずはここから。</p>
+  <ul class="category-card__items"><li><a class="category-chip is-current" href="#top">C言語<span class="category-chip__badge">この記事</span></a></li><li><a class="category-chip" href="#overview">UNIX</a></li><li><a class="category-chip" href="#overview">プログラミング言語</a></li><li><a class="category-chip" href="#overview">オペレーティングシステム</a></li><li><a class="category-chip" href="#features">デバイスドライバ</a></li><li><a class="category-chip" href="#features">組み込みシステム</a></li></ul>
+</article>
+<article class="category-card" id="category-languages" style="--category-color:#2f7fbf">
+  <header class="category-card__head">
+    <span class="category-card__dot" aria-hidden="true"></span>
+    <h3>プログラミング言語</h3>
+    <span class="count-badge">9項目</span>
+  </header>
+  <p class="category-card__description">計算機に仕事をさせるための言葉たち。</p>
+  <ul class="category-card__items"><li><a class="category-chip is-current" href="#top">C言語<span class="category-chip__badge">この記事</span></a></li><li><a class="category-chip" href="#derived">C++</a></li><li><a class="category-chip" href="#derived">C#</a></li><li><a class="category-chip" href="#derived">D言語</a></li><li><a class="category-chip" href="#derived">Java</a></li><li><a class="category-chip" href="#derived">Rust</a></li><li><a class="category-chip" href="#extended">Objective-C</a></li><li><a class="category-chip" href="#derived">Python</a></li><li><a class="category-chip" href="#derived">Ruby</a></li></ul>
+</article>
+<article class="category-card" id="category-concepts" style="--category-color:#2f8f83">
+  <header class="category-card__head">
+    <span class="category-card__dot" aria-hidden="true"></span>
+    <h3>プログラミング概念</h3>
+    <span class="count-badge">6項目</span>
+  </header>
+  <p class="category-card__description">コードの裏側にある考え方。</p>
+  <ul class="category-card__items"><li><a class="category-chip" href="#features">ポインタ</a></li><li><a class="category-chip" href="#features">メモリ管理</a></li><li><a class="category-chip" href="#features">未定義動作</a></li><li><a class="category-chip" href="#features">バッファオーバーフロー</a></li><li><a class="category-chip" href="#features">ガベージコレクション</a></li><li><a class="category-chip" href="#overview">コンパイル</a></li></ul>
+</article>
+<article class="category-card" id="category-embedded" style="--category-color:#a1762a">
+  <header class="category-card__head">
+    <span class="category-card__dot" aria-hidden="true"></span>
+    <h3>組み込み・低レイヤ</h3>
+    <span class="count-badge">5項目</span>
+  </header>
+  <p class="category-card__description">ハードウェアとソフトウェアの境界線。</p>
+  <ul class="category-card__items"><li><a class="category-chip" href="#features">組み込みシステム</a></li><li><button type="button" class="category-chip is-soon" data-soon="リアルタイムOS" title="このパロディ版では未作成">リアルタイムOS</button></li><li><button type="button" class="category-chip is-soon" data-soon="マイコン" title="このパロディ版では未作成">マイコン</button></li><li><a class="category-chip" href="#features">レジスタ</a></li><li><a class="category-chip" href="#features">ビット演算</a></li></ul>
+</article>
+<article class="category-card" id="category-culture" style="--category-color:#b25b7a">
+  <header class="category-card__head">
+    <span class="category-card__dot" aria-hidden="true"></span>
+    <h3>文化・その他</h3>
+    <span class="count-badge">6項目</span>
+  </header>
+  <p class="category-card__description">言語を囲む人と現象。</p>
+  <ul class="category-card__items"><li><a class="category-chip" href="#features">ハッカー</a></li><li><a class="category-chip" href="#features">アスキーアート</a></li><li><a class="category-chip" href="#features">Hello World</a></li><li><a class="category-chip" href="#features">セグメンテーションフォールト</a></li><li><a class="category-chip" href="#related-tags">闇</a></li><li><a class="category-chip" href="#overview">パロディ</a></li></ul>
+</article></div>
+        </section>
+
+        <section class="about" id="about" aria-labelledby="about-title">
+          <div class="section__heading">
+            <h2 class="section__title" id="about-title">このサイトについて<a class="section__anchor" href="#about" aria-label="このサイトについてへのリンク">#</a></h2>
+            <span class="section__rule" aria-hidden="true"></span>
+          </div>
+          <p>「うちのこ百科事典」は、ピクシブ百科事典の記事ページを参考に制作した非公式のパロディサイトです。記事本文はC言語に関する事実をもとに書き下ろしたフィクション混じりの解説で、pixiv百科事典の本文をそのまま転載したものではありません。ロゴ・画像・本文はすべてこのサイト用に用意したもので、pixiv株式会社とは関係ありません。</p>
+          <p class="about__links">
+            <a href="https://dic.pixiv.net/a/C%E8%A8%80%E8%AA%9E" target="_blank" rel="noopener noreferrer">参考にしたページ（pixiv百科事典「C言語」）</a>
+            <span aria-hidden="true">・</span>
+            <a href="guide.html#data-structure">編集データはJSON</a>
+            <span aria-hidden="true">・</span>
+            <span>取得日 2026-10-25</span>
+          </p>
+        </section>
+      </article>
+
+      <aside class="sidebar" aria-label="補助情報">
+        <section class="side-card">
+          <div class="side-card__head">
+            <h2>カテゴリ一覧</h2>
+            <span class="side-card__badge">5</span>
+          </div>
+          <p class="side-card__note">全32項目（延べ）</p>
+          <ul class="side-categories"><li>
+  <a class="side-cat" href="#category-general">
+    <span class="side-cat__dot" style="--category-color:#5b7c99" aria-hidden="true"></span>
+    <span class="side-cat__name">一般</span>
+    <span class="side-cat__count">6</span>
+  </a>
+</li><li>
+  <a class="side-cat" href="#category-languages">
+    <span class="side-cat__dot" style="--category-color:#2f7fbf" aria-hidden="true"></span>
+    <span class="side-cat__name">プログラミング言語</span>
+    <span class="side-cat__count">9</span>
+  </a>
+</li><li>
+  <a class="side-cat" href="#category-concepts">
+    <span class="side-cat__dot" style="--category-color:#2f8f83" aria-hidden="true"></span>
+    <span class="side-cat__name">プログラミング概念</span>
+    <span class="side-cat__count">6</span>
+  </a>
+</li><li>
+  <a class="side-cat" href="#category-embedded">
+    <span class="side-cat__dot" style="--category-color:#a1762a" aria-hidden="true"></span>
+    <span class="side-cat__name">組み込み・低レイヤ</span>
+    <span class="side-cat__count">5</span>
+  </a>
+</li><li>
+  <a class="side-cat" href="#category-culture">
+    <span class="side-cat__dot" style="--category-color:#b25b7a" aria-hidden="true"></span>
+    <span class="side-cat__name">文化・その他</span>
+    <span class="side-cat__count">6</span>
+  </a>
+</li></ul>
+          <a class="side-card__more" href="#categories">カテゴリ一覧をすべて見る <span aria-hidden="true">›</span></a>
+        </section>
+
+        <section class="side-card">
+          <div class="side-card__head"><h2>この記事のデータ</h2></div>
+          <dl class="article-stats">
+            <div><dt>セクション</dt><dd>5</dd></div>
+            <div><dt>本文ブロック</dt><dd>19</dd></div>
+            <div><dt>カテゴリ</dt><dd>5</dd></div>
+            <div><dt>収録項目</dt><dd>32</dd></div>
+            <div><dt>関連タグ</dt><dd>9</dd></div>
+            <div><dt>最終更新</dt><dd>2026-10-25</dd></div>
+          </dl>
+          <p class="side-card__note side-card__note--tiny">項目数は content/categories.json から自動計算しています。</p>
+        </section>
+
+        <section class="side-card side-card--edit">
+          <div class="side-card__head"><h2>この記事を編集</h2></div>
+          <p>本文・画像・カテゴリ・項目数はJSONで管理しています。エディタから書き換えて、ビルドし直すだけ。</p>
+          <a class="button button--blue button--wide" href="editor.html">コンテンツエディタを開く</a>
+          <a class="side-card__text-link" href="guide.html">編集ガイドを読む <span aria-hidden="true">›</span></a>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer" id="site-footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <a class="footer-brand" href="#top">
+        <img src="assets/images/mark.svg" alt="" width="28" height="28">
+        <span>うちのこ百科事典<em>PARODY</em></span>
+      </a>
+      <p>ピクシブ百科事典の見た目を参考に、C言語を紹介する「うちのこ百科事典」として作りました。</p>
+    </div>
+    <div class="footer__columns"><div class="footer-column">
+  <h3>サービスについて</h3>
+  <ul><li><a class="footer-link" href="#about">このサイトについて</a></li><li><a class="footer-link" href="#categories">カテゴリ一覧</a></li><li><a class="footer-link" href="https://dic.pixiv.net/a/C%E8%A8%80%E8%AA%9E" target="_blank" rel="noopener noreferrer">参考にしたページ</a></li></ul>
+</div>
+<div class="footer-column">
+  <h3>コンテンツ</h3>
+  <ul><li><a class="footer-link" href="#top">C言語</a></li><li><a class="footer-link" href="#related-tags">関連タグ</a></li><li><button type="button" class="footer-link" data-action="history">編集履歴</button></li></ul>
+</div>
+<div class="footer-column">
+  <h3>編集</h3>
+  <ul><li><a class="footer-link" href="editor.html">コンテンツエディタ</a></li><li><a class="footer-link" href="guide.html">編集ガイド</a></li><li><a class="footer-link" href="guide.html#data-structure">データ構造</a></li></ul>
+</div>
+<div class="footer-column">
+  <h3>言語</h3>
+  <ul><li><a class="footer-link" href="#top">日本語</a></li><li><button type="button" class="footer-link" data-action="soon" data-message="English版は準備中です。">English</button></li></ul>
+</div></div>
+    <div class="footer__legal">
+      <p>本サイト「うちのこ百科事典」は、pixiv株式会社、ピクシブ百科事典、および記事内で言及される各団体・人物とは関係のない非公式パロディです。</p>
+      <p>© 2026 うちのこ百科事典</p>
+    </div>
+  </div>
+</footer>
+
+  <button type="button" class="back-to-top" id="back-to-top" aria-label="ページ先頭へ">↑</button>
+  <div class="drawer-overlay" id="drawer-overlay" hidden>
+  <div class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" tabindex="-1">
+    <div class="drawer__head">
+      <span class="drawer__title" id="drawer-title">メニュー</span>
+      <button type="button" class="icon-button icon-button--dark" data-close-menu aria-label="メニューを閉じる">×</button>
+    </div>
+    <div class="drawer__body">
+      <section class="drawer-section">
+  <h2>この記事</h2>
+  <ul><li><a href="#top">ページ先頭</a></li><li><a href="#overview">概要</a></li><li><a href="#features">特徴</a></li><li><a href="#derived">派生言語</a></li><li><a href="#related-tags">関連タグ</a></li></ul>
+</section><section class="drawer-section">
+  <h2>サイト</h2>
+  <ul><li><a href="#categories">カテゴリ一覧</a></li><li><a href="editor.html">編集する</a></li><li><a href="#about">このサイトについて</a></li></ul>
+</section>
+      <section class="drawer-section">
+        <h2>カテゴリ</h2>
+        <ul><li><a href="#category-general">一般<span class="drawer-count">6</span></a></li><li><a href="#category-languages">プログラミング言語<span class="drawer-count">9</span></a></li><li><a href="#category-concepts">プログラミング概念<span class="drawer-count">6</span></a></li><li><a href="#category-embedded">組み込み・低レイヤ<span class="drawer-count">5</span></a></li><li><a href="#category-culture">文化・その他<span class="drawer-count">6</span></a></li></ul>
+      </section>
+      <div class="drawer__cta">
+        <a class="button button--blue button--wide" href="editor.html">コンテンツエディタを開く</a>
+        <a class="button button--soft button--wide" href="guide.html">編集ガイド</a>
+      </div>
+    </div>
+  </div>
+</div>
+  <dialog class="dialog" id="history-dialog" aria-labelledby="history-title">
+  <div class="dialog__head">
+    <h2 id="history-title">編集履歴</h2>
+    <button type="button" class="dialog__close" data-close-dialog aria-label="閉じる">×</button>
+  </div>
+  <ol class="history-list"><li><time datetime="2026-10-25">2026-10-25</time><span>パロディ版として全面リライト。カテゴリ一覧と画像を追加。</span></li><li><time datetime="2026-10-24">2026-10-24</time><span>構成をJSONに分離し、編集しやすい形に変更。</span></li><li><time datetime="2026-10-23">2026-10-23</time><span>初版作成。C言語の記事ページを参考にレイアウトを組み立て。</span></li></ol>
+  <div class="dialog__foot"><button type="button" class="button button--soft" data-close-dialog>閉じる</button></div>
+</dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="application/json" id="search-index">{"sections":[{"type":"節","title":"1 概要","text":"C言語は1972年、AT&Tベル研究所でUNIXを別のコンピュータへ移植しやすくするために生まれたプログラミング言語である。設計にはDennis M. RitchieとBrian W. Kernighanらが携わった。 得意分野はOSやデバイスドライバなど、ハードウェアに近いソフトウェア。ところが移植性の高さと実行速度のバランスが絶妙で、アプリケーションから組み込みシステムまで、気づけばあらゆる場所にC言語がいる。 現在ではC言語の上に新しい言語が積み上げられ、C言語自身は「土台」や「共通語」のような立場になった。とはいえ、土台がなければ何も建たない。縁の下の力持ちにして、舞台の主役でもあるのだ。 このページについて：ここはピクシブ百科事典の外観を参考にした非公式パロディです。実在の人物・団体・プログラミング言語への愛と敬意を込めて書いています。","href":"#overview","id":"overview"},{"type":"節","title":"2 特徴","text":"最大の特徴は、ハードウェア寄りの低レベルな記述ができること。ポインタでメモリを直接つつき、ビットを数え、レジスタの気持ちを想像できる。プログラマーにできることを制限しない自由さはハッカーに好まれ、その自由さがバッファオーバーフローや未定義動作の温床にもなる。 文法は比較的簡素で、標準ライブラリも控えめ。文字列操作のたびに自分で長さを管理し、メモリを確保したら自分で解放する。JavaやC#のようなガベージコレクションは標準では用意されていない。自由と引き換えに、面倒も一緒についてくるわけである。 変数xの値42と、そのアドレスを指すポインタpの関係を示した図 / ポインタは「値」ではなく「住所」を見ている（イメージ）。 / 図：百科事典編集部 自由すぎるがゆえに、一見アスキーアートにしか見えないコードも書ける。保守やデバッグが難しくなりがちだが、そこがいいという声も多い。可読性は、しばしば実行速度と交換される。 初心者への優しさはあまり考慮されていない。大学の講義でC言語に挫折した経験を持つ人も少なくないだろう。だが、その厳しさを乗り越えた先には、コンピュータの仕組みが少し見える世界が待っている。 hello.c c #include \u003cstdio.h>\n\nint main(void) {\n    const char *message = \"Hello, 世界\";\n    puts(message);\n    return 0;\n} 実行する前に：上のコードは、環境によっては日本語が化けたり、警告が出たり、何も起きなかったりします。動けば勝ち、動かなければ勉強。それがC言語。 C言語あるある / セミコロンを忘れて3分溶かす。 / ポインタの型が合わずに丸一日溶かす。 / printf を入れたら直る（気がする）。 / 「undefined behavior」で検索する回数が増える。 / 最後は -Wall -Wextra に謝る。","href":"#features","id":"features"},{"type":"節","title":"3 派生言語","text":"C言語の文法や設計思想を受け継いだ言語は多い。直接の派生言語から、文法だけを参考にしたものまで、ここでは一部を紹介する。 C++ — C言語にオブジェクト指向などを足した、とても長い付き合いになる言語。 / C# — Microsoft製。名前は似ているが、かなり別の言語。 / D言語 — C++の反省を踏まえた、近代的なシステムプログラミング言語。 / Java — 仮想マシン上で動く。C言語の代役を務めた時代がある。 / Rust — 借用チェッカーに怒られながらメモリ安全を学ぶ言語。直接の派生ではないが、よく比較される。","href":"#derived","id":"derived"},{"type":"節","title":"3.1 拡張言語","text":"C言語の構文を土台に、用途を絞って拡張した言語もある。 Objective-C — Appleの世界を支えた、C言語とSmalltalkのハイブリッド。 / CUDA — GPUで並列計算をするための拡張。C++寄り。","href":"#extended","id":"extended"},{"type":"節","title":"4 関連タグ","text":"ここから先は沼。関連タグをたどると、C言語の別の顔が見えてくる。 プログラミング言語 / 組み込みシステム / ポインタ / 未定義動作 / セグメンテーションフォールト / メモリ管理 / Hello World / 闇 / パロディ 「闇」タグが気になった人は、まず -Wall -Wextra -Werror でコンパイルしてみよう。闇は、たいてい警告として先に教えてくれる。","href":"#related-tags","id":"related-tags"}],"categories":[{"type":"カテゴリ","title":"一般","text":"物事の入口。まずはここから。 / C言語 / UNIX / プログラミング言語 / オペレーティングシステム / デバイスドライバ / 組み込みシステム","href":"#category-general","id":"category-general"},{"type":"カテゴリ","title":"プログラミング言語","text":"計算機に仕事をさせるための言葉たち。 / C言語 / C++ / C# / D言語 / Java / Rust / Objective-C / Python / Ruby","href":"#category-languages","id":"category-languages"},{"type":"カテゴリ","title":"プログラミング概念","text":"コードの裏側にある考え方。 / ポインタ / メモリ管理 / 未定義動作 / バッファオーバーフロー / ガベージコレクション / コンパイル","href":"#category-concepts","id":"category-concepts"},{"type":"カテゴリ","title":"組み込み・低レイヤ","text":"ハードウェアとソフトウェアの境界線。 / 組み込みシステム / リアルタイムOS / マイコン / レジスタ / ビット演算","href":"#category-embedded","id":"category-embedded"},{"type":"カテゴリ","title":"文化・その他","text":"言語を囲む人と現象。 / ハッカー / アスキーアート / Hello World / セグメンテーションフォールト / 闇 / パロディ","href":"#category-culture","id":"category-culture"}],"tags":[{"type":"タグ","title":"プログラミング言語","text":"関連タグ「プログラミング言語」","href":"#related-tags","id":"related-tags"},{"type":"タグ","title":"組み込みシステム","text":"関連タグ「組み込みシステム」","href":"#related-tags","id":"related-tags"},{"type":"タグ","title":"ポインタ","text":"関連タグ「ポインタ」","href":"#related-tags","id":"related-tags"},{"type":"タグ","title":"未定義動作","text":"関連タグ「未定義動作」","href":"#related-tags","id":"related-tags"},{"type":"タグ","title":"セグメンテーションフォールト","text":"関連タグ「セグメンテーションフォールト」","href":"#related-tags","id":"related-tags"},{"type":"タグ","title":"メモリ管理","text":"関連タグ「メモリ管理」","href":"#related-tags","id":"related-tags"},{"type":"タグ","title":"Hello World","text":"関連タグ「Hello World」","href":"#related-tags","id":"related-tags"},{"type":"タグ","title":"闇","text":"関連タグ「闇」","href":"#related-tags","id":"related-tags"},{"type":"タグ","title":"パロディ","text":"関連タグ「パロディ」","href":"#related-tags","id":"related-tags"}]}</script>
+  <script src="assets/js/main.js" defer></script>
+</body>
+</html>
