@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>うちのこ百科事典</title>
-  <meta name="description" content="C言語を題材にした、ピクシブ百科事典風の非公式パロディ百科事典。">
+  <meta name="description" content="創作キャラクターの紹介ページを作れる、ピクシブ百科事典風の非公式パロディ百科事典。">
   <meta name="theme-color" content="#314e6f">
   <meta name="color-scheme" content="light">
   <meta name="robots" content="noindex, nofollow, noarchive, noimageindex">
   <meta property="og:type" content="article">
   <meta property="og:title" content="うちのこ百科事典">
-  <meta property="og:description" content="C言語を題材にした、ピクシブ百科事典風の非公式パロディ百科事典。">
+  <meta property="og:description" content="創作キャラクターの紹介ページを作れる、ピクシブ百科事典風の非公式パロディ百科事典。">
   <meta property="og:site_name" content="うちのこ百科事典">
   <link rel="icon" href="assets/images/mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/style.css">
@@ -48,7 +48,7 @@
           <div class="editor-topbar__actions">
             <button type="button" class="button button--ghost" data-close-editor>記事に戻る</button>
             <button type="button" class="button button--soft" data-action="save">今すぐ保存</button>
-            <button type="button" class="button button--soft" data-panel-target="export">書き出し</button>
+            <button type="button" class="button button--soft" data-panel-target="export">書き出し/インポート</button>
           </div>
         </div>
       </header>
@@ -63,7 +63,7 @@
               <span>本文</span><span class="editor-nav__count" data-count="blocks">–</span>
             </button>
             <button type="button" class="editor-nav__item" data-panel-target="export">
-              <span>書き出し</span>
+              <span>書き出し/インポート</span>
             </button>
           </nav>
 
@@ -71,7 +71,7 @@
             <h2 id="stats-title">現在の構成</h2>
             <dl>
               <div><dt>セクション</dt><dd id="stat-sections">–</dd></div>
-              <div><dt>本文ブロック</dt><dd id="stat-blocks">–</dd></div>
+              <div><dt>ブロック</dt><dd id="stat-blocks">–</dd></div>
               <div><dt>関連タグ</dt><dd id="stat-tags">–</dd></div>
             </dl>
             <p>変更はこのブラウザに自動保存されます。アップロードした画像は保存されないため、開くたびに選び直してください。</p>
@@ -82,45 +82,43 @@
           <!-- ============================== BASIC ============================== -->
           <section class="editor-panel is-active" data-panel="basic" aria-labelledby="panel-basic-title">
             <header class="panel-head">
-              <p class="panel-head__eyebrow">basic information</p>
+              <p class="panel-head__eyebrow">basic</p>
               <h1 id="panel-basic-title">基本情報</h1>
-              <p>記事タイトル、概要、ヒーロー画像、ヘッダーリンクなどを編集します。</p>
+              <p>記事のタイトル、概要、メイン画像、タイトル下のリンクなどを編集します。</p>
             </header>
 
             <article class="editor-card">
               <header class="editor-card__head">
                 <h2>タイトルと概要</h2>
-                <span class="file-tag">article</span>
               </header>
               <div class="field-grid">
                 <label class="field">
                   <span class="field__label">記事タイトル <b>必須</b></span>
-                  <input type="text" data-path="article.title" placeholder="C言語">
+                  <input type="text" data-path="article.title" placeholder="キャラクタ太郎">
                 </label>
                 <label class="field">
                   <span class="field__label">読み仮名</span>
-                  <input type="text" data-path="article.reading" placeholder="しーげんご">
+                  <input type="text" data-path="article.reading" placeholder="きゃらくたたろう">
                 </label>
                 <label class="field field--full">
                   <span class="field__label">概要文</span>
                   <textarea rows="3" data-path="article.summary" placeholder="記事の冒頭に表示される短い説明"></textarea>
-                  <span class="field__hint">インライン記法（<code>[[語句]]</code> / <code>**強調**</code> / <code>`コード`</code>）が使えます。</span>
+                  <span class="field__hint">文字を <code>**</code> で囲むと太字になります（例：<code>**太字**</code>）。</span>
                 </label>
                 <label class="field">
                   <span class="field__label">最終更新日</span>
                   <input type="date" data-path="article.updated">
                 </label>
                 <label class="field">
-                  <span class="field__label">バージョン表記</span>
-                  <input type="text" data-path="article.version" placeholder="parody-1.0">
+                  <span class="field__label">版（バージョン）</span>
+                  <input type="text" data-path="article.version" placeholder="1.0">
                 </label>
               </div>
             </article>
 
             <article class="editor-card">
               <header class="editor-card__head">
-                <h2>ヒーロー画像</h2>
-                <span class="file-tag">article / hero</span>
+                <h2>メイン画像</h2>
               </header>
               <div class="field-grid">
                 <label class="field field--full">
@@ -129,20 +127,21 @@
                   <span class="field__hint">アップロード画像はブラウザに保存されません。再訪時は再選択してください。</span>
                 </label>
                 <label class="field field--full">
-                  <span class="field__label">画像パス</span>
-                  <input type="text" data-path="article.hero.src" placeholder="assets/images/c-language.svg">
-                  <span class="field__hint">リポジトリ内のパス、または https:// で始まるURL。</span>
+                  <span class="field__label">画像のURL（任意）</span>
+                  <input type="text" data-path="article.hero.src" placeholder="https://example.com/image.png">
+                  <span class="field__hint">ネット上の画像を使う場合に、<code>https://</code> で始まる画像のURLを入力します。通常は上の「画像をアップロード」を使ってください。</span>
                 </label>
                 <label class="field field--full">
-                  <span class="field__label">代替テキスト</span>
-                  <input type="text" data-path="article.hero.alt" placeholder="画像の内容を説明する文">
+                  <span class="field__label">画像の説明</span>
+                  <input type="text" data-path="article.hero.alt" placeholder="例：スーツ姿の男性のイラスト">
+                  <span class="field__hint">画像が表示されないときや、読み上げ機能で使われます。</span>
                 </label>
                 <label class="field">
                   <span class="field__label">キャプション</span>
                   <input type="text" data-path="article.hero.caption">
                 </label>
                 <label class="field">
-                  <span class="field__label">クレジット</span>
+                  <span class="field__label">作者・出典</span>
                   <input type="text" data-path="article.hero.credit">
                 </label>
                 <div class="field field--preview">
@@ -157,7 +156,6 @@
             <article class="editor-card">
               <header class="editor-card__head">
                 <h2>このサイトについて</h2>
-                <span class="file-tag">article / about</span>
               </header>
               <div class="field-grid">
                 <label class="field">
@@ -173,7 +171,7 @@
 
             <article class="editor-card">
               <header class="editor-card__head">
-                <h2>記事ヘッダーのリンク</h2>
+                <h2>タイトル下のリンク</h2>
                 <button type="button" class="editor-mini-button" data-add="action">＋ 追加</button>
               </header>
               <p class="editor-card__note">タイトル下に縦に並ぶリンクです。表示名だけを設定でき、押しても移動しません。</p>
@@ -184,28 +182,27 @@
           <!-- ============================== BODY =============================== -->
           <section class="editor-panel" data-panel="body" aria-labelledby="panel-body-title">
             <header class="panel-head">
-              <p class="panel-head__eyebrow">article / sections</p>
+              <p class="panel-head__eyebrow">body</p>
               <h1 id="panel-body-title">本文</h1>
-              <p>節を追加・並べ替え・削除し、それぞれのブロックを編集します。節番号は自動で振られます。</p>
+              <p>セクション（見出しとその内容のまとまり）を追加・並べ替え・削除し、中のブロック（段落やリスト）を編集します。セクションの番号は自動で振られます。</p>
             </header>
 
             <article class="editor-card">
               <header class="editor-card__head">
                 <h2>関連タグ</h2>
-                <span class="file-tag">article / relatedTags</span>
               </header>
               <div class="field-grid">
                 <label class="field field--full">
                   <span class="field__label">タグ一覧</span>
-                  <input type="text" data-path="article.relatedTags" data-transform="csv" placeholder="プログラミング言語, ポインタ, 未定義動作">
-                  <span class="field__hint">カンマまたは読点区切り。検索インデックスにも使われます。</span>
+                  <input type="text" data-path="article.relatedTags" data-transform="csv" placeholder="オリジナルキャラクター, サラリーマン">
+                  <span class="field__hint">カンマ（,）または読点（、）で区切って入力します。ページ上部の検索で見つかるようになります。</span>
                 </label>
               </div>
             </article>
 
             <div class="section-toolbar">
-              <p><strong id="section-count-label">–</strong> 個の節</p>
-              <button type="button" class="button button--blue" data-add-section>＋ 節を追加</button>
+              <p><strong id="section-count-label">–</strong> 個のセクション</p>
+              <button type="button" class="button button--blue" data-add-section>＋ セクションを追加</button>
             </div>
 
             <div id="sections"></div>
@@ -215,8 +212,8 @@
           <section class="editor-panel" data-panel="export" aria-labelledby="panel-export-title">
             <header class="panel-head">
               <p class="panel-head__eyebrow">export / import</p>
-              <h1 id="panel-export-title">書き出し</h1>
-              <p>編集した記事をファイルとして保存します。JSONは再編集用、HTML・PNG・PDFは配布や閲覧用です。</p>
+              <h1 id="panel-export-title">書き出し/インポート</h1>
+              <p>編集した記事をファイルとして保存したり、保存したJSONを読み込んだりします。JSONは再編集用、HTML・PNG・PDFは配布や閲覧用です。</p>
             </header>
 
             <article class="editor-card">
@@ -226,12 +223,12 @@
               <div class="export-grid">
                 <div class="export-card">
                   <h3>JSON</h3>
-                  <p>サイト・記事を1つのファイルにまとめます。あとから読み込んで編集を再開できます。</p>
+                  <p>編集内容をまるごと保存するファイルです。あとから「ファイルから読み込む」で編集を再開できます。バックアップにも使えます。</p>
                   <button type="button" class="button button--blue" data-export="json">JSONを書き出す</button>
                 </div>
                 <div class="export-card">
                   <h3>HTML</h3>
-                  <p>CSSと画像を埋め込んだ単体のHTMLです。そのまま配布したり、静的ホスティングに置いたりできます。</p>
+                  <p>ブラウザで開ける1つのWebページとして保存します。画像も含まれるので、そのまま人に渡したり、Webに公開したりできます。</p>
                   <button type="button" class="button button--blue" data-export="html">HTMLを書き出す</button>
                 </div>
                 <div class="export-card">
@@ -253,8 +250,8 @@
                 <h2>ファイルから読み込む</h2>
               </header>
               <p class="editor-card__note">
-                このサイトが書き出したJSON、または <code>site / article</code> の2ファイルを選択できます。
-                読み込んだ内容はこのブラウザに保存されます。
+                このサイトで書き出したJSONファイルを選ぶと、その内容で編集を再開できます。
+                読み込んだ内容はこのブラウザに保存されます（今の編集内容は上書きされます）。
               </p>
               <label class="file-drop">
                 <input type="file" id="import-files" accept="application/json,.json" multiple>
@@ -265,13 +262,13 @@
 
             <article class="editor-card">
               <header class="editor-card__head">
-                <h2>保存データ</h2>
+                <h2>このブラウザの保存内容</h2>
               </header>
               <p class="editor-card__note">
-                編集内容はこのブラウザの localStorage に自動保存されています。別の端末やブラウザには引き継がれません。
+                編集内容はこのブラウザに自動保存されています。別の端末やブラウザには引き継がれないため、移すときはJSONファイルを書き出して読み込んでください。
               </p>
               <div class="export-actions">
-                <button type="button" class="button button--soft" data-action="retry">保存データを再読込</button>
+                <button type="button" class="button button--soft" data-action="retry">保存した内容を読み込み直す</button>
                 <button type="button" class="button button--soft" data-action="reset-default">初期データに戻す</button>
               </div>
             </article>
@@ -284,7 +281,7 @@
         </section>
 
         <section class="editor-error" id="editor-error" hidden aria-live="assertive">
-          <p class="editor-error__code">CONTENT NOT LOADED</p>
+          <p class="editor-error__code">ERROR</p>
           <h1>記事データを読み込めませんでした</h1>
           <p id="editor-error-message"></p>
           <div class="editor-error__actions">

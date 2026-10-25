@@ -133,38 +133,38 @@
     const site = state.site || {};
     const article = state.article || {};
 
-    if (!site.site?.name) errors.push("サイト名（site.site.name）が空です。");
-    if (!article.title) errors.push("記事タイトル（article.title）が空です。");
+    if (!site.site?.name) errors.push("サイト名が設定されていません。");
+    if (!article.title) errors.push("記事タイトルが設定されていません。");
     if (!Array.isArray(article.sections)) {
-      errors.push("本文セクション（article.sections）が配列ではありません。");
+      errors.push("本文のデータが正しい形式ではありません。");
     } else {
       const ids = new Set();
       article.sections.forEach((section, index) => {
         const id = String(section.id || "").trim();
-        if (!id) warnings.push(`セクション ${index + 1} にIDがありません（section-${index + 1} として扱います）。`);
-        if (id && ids.has(id)) errors.push(`セクションIDが重複しています: ${id}`);
+        if (!id) warnings.push(`セクション ${index + 1} にリンク用の名前がありません（section-${index + 1} として扱います）。`);
+        if (id && ids.has(id)) errors.push(`セクションのリンク用の名前が重複しています: ${id}`);
         if (id) ids.add(id);
         if (!String(section.title || "").trim()) warnings.push(`セクション ${index + 1} のタイトルが空です。`);
         if (![2, 3].includes(Number(section.level))) {
-          warnings.push(`セクション「${section.title || index + 1}」の見出しレベルは2か3を推奨します。`);
+          warnings.push(`セクション「${section.title || index + 1}」の見出しの大きさは「大見出し」か「小見出し」にしてください。`);
         }
         if (section.blocks !== undefined && !Array.isArray(section.blocks)) {
-          errors.push(`セクション「${section.title || index + 1}」の blocks が配列ではありません。`);
+          errors.push(`セクション「${section.title || index + 1}」の内容が正しい形式ではありません。`);
         }
         if (section.blocks === undefined) {
-          warnings.push(`セクション「${section.title || index + 1}」に blocks がありません。`);
+          warnings.push(`セクション「${section.title || index + 1}」に内容がありません。`);
         }
       });
     }
 
     if (article.hero && !article.hero.src) {
-      warnings.push("ヒーロー画像が未設定です。編集モードからアップロードするか、画像パスを入力してください。");
+      warnings.push("メイン画像が設定されていません。編集モードからアップロードするか、画像のURLを入力してください。");
     }
 
     for (const section of article.sections || []) {
       for (const block of section.blocks || []) {
         if (block.type === "figure" && !block.src) {
-          warnings.push(`セクション「${section.title || ""}」に画像未設定の figure ブロックがあります。`);
+          warnings.push(`セクション「${section.title || ""}」に画像が設定されていない画像ブロックがあります。`);
         }
       }
     }

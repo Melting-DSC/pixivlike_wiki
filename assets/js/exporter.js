@@ -212,7 +212,7 @@ ${article.outerHTML}`;
       canvas.width = Math.max(1, Math.round(width * scale));
       canvas.height = Math.max(1, Math.round(height * scale));
       const context = canvas.getContext("2d");
-      if (!context) throw new Error("Canvas を初期化できませんでした。");
+      if (!context) throw new Error("画像を作成する準備ができませんでした。");
       context.fillStyle = "#eef1f4";
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.drawImage(image, 0, 0, canvas.width, canvas.height);

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>使い方｜うちのこ百科事典</title>
-  <meta name="description" content="うちのこ百科事典の使い方。編集モードの開き方、記事の編集、画像の扱い、JSON・HTML・PNG・PDFの書き出しと読み込みをまとめています。">
+  <meta name="description" content="うちのこ百科事典の使い方。編集モードの開き方、記事の編集、画像の扱い、書き出しとインポートをまとめています。">
   <meta name="robots" content="noindex, nofollow, noarchive, noimageindex">
   <meta name="theme-color" content="#314e6f">
   <meta name="color-scheme" content="light">
@@ -47,7 +47,7 @@
         <a class="button button--soft" href="#quick-start">まずは使ってみる</a>
       </div>
       <dl class="intro-stats">
-        <div><dt>保存先</dt><dd>このブラウザ（localStorage）</dd></div>
+        <div><dt>保存先</dt><dd>このブラウザ</dd></div>
         <div><dt>書き出し</dt><dd>JSON / HTML / PNG / PDF</dd></div>
         <div><dt>ページ移動</dt><dd>編集モードは記事ページ内で開きます</dd></div>
       </dl>
@@ -60,10 +60,10 @@
           <ol>
             <li><a href="#quick-start">クイックスタート</a></li>
             <li><a href="#editor">編集モードの使い方</a></li>
-            <li><a href="#inline">インライン記法</a></li>
+            <li><a href="#inline">文字の装飾とリンク</a></li>
             <li><a href="#images">画像</a></li>
             <li><a href="#export">書き出し</a></li>
-            <li><a href="#import">読み込み</a></li>
+            <li><a href="#import">インポート</a></li>
             <li><a href="#notes">注意事項</a></li>
           </ol>
         </details>
@@ -77,11 +77,11 @@
             ページの移動はなく、記事の上に編集モードが重なって開きます。
           </p>
           <div class="link-cards">
-            <a href="index.html"><span>記事ページ</span><code>index.html</code></a>
-            <a href="index.html#editor"><span>編集モード</span><code>index.html#editor</code></a>
+            <a href="index.html"><span>記事ページ</span><small>記事を読む</small></a>
+            <a href="index.html#editor"><span>編集モード</span><small>記事を書き換える</small></a>
           </div>
           <ol class="steps">
-            <li><strong>編集モードを開く</strong><span>ヘッダーの「この記事を編集」、サイドバーやメニューの「編集モードを開く」から開けます。</span></li>
+            <li><strong>編集モードを開く</strong><span>ヘッダーの「この記事を編集」や、サイドバーの「編集モードを開く」から開けます。</span></li>
             <li><strong>フォームで書き換える</strong><span>左のメニューから基本情報・本文を選びます。</span></li>
             <li><strong>記事に戻る</strong><span>「記事に戻る」を押すと、編集した内容がそのまま記事に反映されています。</span></li>
           </ol>
@@ -100,20 +100,20 @@
           <div class="file-grid">
             <div class="file-card">
               <h3>基本情報</h3>
-              <p>タイトル、読み、概要、ヒーロー画像、ヘッダーリンク、このサイトについて。</p>
+              <p>タイトル、読み仮名、概要、メイン画像、タイトル下のリンク、このサイトについて。</p>
             </div>
             <div class="file-card">
               <h3>本文</h3>
-              <p>節とブロックの追加・削除・並べ替え。段落、リスト、コード、注記、画像、タグ、引用、区切り線。</p>
+              <p>セクションとブロック（段落・リスト）の追加・削除・並べ替え。</p>
             </div>
             <div class="file-card">
-              <h3>書き出し</h3>
-              <p>JSON・HTML・PNG・PDFへの書き出しと、JSONファイルの読み込み。</p>
+              <h3>書き出し/インポート</h3>
+              <p>JSON・HTML・PNG・PDFへの書き出しと、JSONファイルのインポート。</p>
             </div>
           </div>
           <h3>できること</h3>
           <ul>
-            <li>本文セクションとブロックの追加・削除・並べ替え。</li>
+            <li>セクション（見出しとその内容）とブロック（段落・リスト）の追加・削除・並べ替え。</li>
             <li><kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>S</kbd> で明示的に保存。</li>
             <li>「記事に戻る」で編集モードを閉じ、元の位置に戻る。</li>
           </ul>
@@ -121,47 +121,41 @@
             <strong>保存先はこのブラウザだけです。</strong>
             <p>
               編集内容はサーバーへ送信されません。別の端末やブラウザ、シークレットウィンドウには引き継がれません。
-              大切な内容は「書き出し」でJSONを保存しておいてください。
+              大切な内容は「書き出し/インポート」からJSONファイルを書き出して保管しておいてください。
             </p>
           </div>
         </section>
 
         <section id="inline">
-          <h2>インライン記法</h2>
-          <p>段落、リスト、注記、引用、キャプションでは、次の記法が使えます。</p>
+          <h2>文字の装飾とリンク</h2>
+          <p>概要・段落・リストの文章では、記号で囲むと文字を装飾できます。</p>
           <table>
             <thead><tr><th>書き方</th><th>結果</th></tr></thead>
             <tbody>
-              <tr><td><code>[[C++]]</code></td><td>「C++」をリンクと同じ見た目で表示（押しても移動しません）。</td></tr>
-              <tr><td><code>[[C++|Cプラプラ]]</code></td><td>表示名だけ変えて同様に表示。</td></tr>
-              <tr><td><code>[ラベル](https://example.com)</code></td><td>通常のリンク。外部URLは新しいタブで開きます。</td></tr>
-              <tr><td><code>**強調**</code></td><td>太字。</td></tr>
-              <tr><td><code>`コード`</code></td><td>インラインコード。</td></tr>
+              <tr><td><code>**太字**</code></td><td>太字になります。</td></tr>
+              <tr><td><code>[表示する文字](https://example.com)</code></td><td>リンクになります。押すと新しいタブで開きます。</td></tr>
+              <tr><td><code>[[会社員]]</code></td><td>リンクと同じ青い文字で表示します（押しても移動しません）。</td></tr>
             </tbody>
           </table>
-          <p>
-            HTMLタグはエスケープされ、そのままでは埋め込まれません。コードブロック内の <code>code</code> も
-            そのまま表示されるため、インライン記法は適用されません。
-          </p>
         </section>
 
         <section id="images">
           <h2>画像</h2>
           <p>
-            ヒーロー画像と本文中の画像は、編集モードの「画像をアップロード」から選択できます。
+            メイン画像は、編集モードの「基本情報」にある「画像をアップロード」から選択できます。
             選択した画像はその場で記事に表示され、書き出しにも含まれます。
           </p>
           <ul>
             <li>アップロードした画像はこのブラウザに保存されません。</li>
             <li>ページを開き直したときは、画像を選び直してください。未設定の画像は「画像未設定」と表示されます。</li>
-            <li>画像パスに <code>assets/images/ファイル名</code> や <code>https://</code> のURLを直接入力することもできます。</li>
-            <li>画像には内容を説明する代替テキスト（<code>alt</code>）を付け、出典がある場合はクレジットに記載してください。</li>
+            <li>ネット上の画像を使う場合は、「画像のURL」に <code>https://</code> で始まるURLを入力することもできます。</li>
+            <li>「画像の説明」には画像の内容を書き、ほかの人が描いた画像を使う場合は「作者・出典」も記入してください。</li>
           </ul>
           <div class="callout callout--warn">
             <strong>画像は毎回選び直します。</strong>
             <p>
               データを軽く保つため、アップロード画像そのものは保存対象外です。
-              同じ画像を使い続けたい場合は、画像パスに固定のURLやリポジトリ内のパスを指定してください。
+              同じ画像を使い続けたい場合は、ネット上に公開されている画像のURLを「画像のURL」に入力してください。
             </p>
           </div>
         </section>
@@ -169,7 +163,7 @@
         <section id="export">
           <h2>書き出し</h2>
           <p>
-            編集モード左側の「書き出し」から、記事を4つの形式で保存できます。
+            編集モード左側の「書き出し/インポート」から、記事を4つの形式で保存できます。
             用途に合わせて選んでください。
           </p>
           <div class="table-scroll">
@@ -178,13 +172,13 @@
               <tbody>
                 <tr>
                   <td><strong>JSON</strong></td>
-                  <td>サイト・記事を1つのファイルにまとめたもの。</td>
+                  <td>編集内容をまるごと保存したファイル。</td>
                   <td>バックアップ、再編集、別のブラウザへの移行。</td>
                 </tr>
                 <tr>
                   <td><strong>HTML</strong></td>
-                  <td>CSSと画像を埋め込んだ単体のHTMLファイル。</td>
-                  <td>そのまま配布、静的ホスティングへの配置。</td>
+                  <td>画像も含めた、ブラウザで開ける1つのWebページ。</td>
+                  <td>そのまま人に渡す、Webに公開する。</td>
                 </tr>
                 <tr>
                   <td><strong>PNG</strong></td>
@@ -210,13 +204,12 @@
         </section>
 
         <section id="import">
-          <h2>読み込み</h2>
+          <h2>インポート</h2>
           <p>
-            「書き出し」パネルの「ファイルから読み込む」から、JSONを選んで編集を再開できます。
+            「書き出し/インポート」パネルの「ファイルから読み込む」から、書き出しておいたJSONファイルを選ぶと編集を再開できます。
           </p>
           <ul>
-            <li>このサイトが書き出したJSON（サイト・記事をまとめたもの）をそのまま選べます。</li>
-            <li><code>site.json</code>、<code>article.json</code> の2ファイルをまとめて選ぶこともできます。</li>
+            <li>このサイトで書き出したJSONファイルをそのまま選べます。</li>
             <li>読み込んだ内容は、その場で記事に反映され、このブラウザに保存されます。</li>
             <li>読み込み前に現在の編集内容を残したい場合は、先にJSONを書き出してください。</li>
           </ul>
@@ -225,12 +218,12 @@
         <section id="notes">
           <h2>注意事項</h2>
           <ul>
-            <li>編集内容はこのブラウザの localStorage に保存されます。ブラウザのデータを消去すると編集内容も消えます。</li>
+            <li>編集内容はこのブラウザに保存されます。ブラウザの履歴やサイトデータを消去すると編集内容も消えます。</li>
             <li>アップロードした画像は保存されません。開くたびに再選択してください。</li>
             <li>別の端末やブラウザへ移す場合は、JSONを書き出して読み込み直してください。</li>
             <li>大きな変更の前には、JSONの書き出しでバックアップを取ってください。</li>
             <li>このサイトは「ピクシブ百科事典」の外観を参考にした非公式パロディです。実在の記事・画像・ロゴとは関係ありません。</li>
-            <li>検索避けのため、全HTMLページに <code>noindex</code> を指定し、<code>robots.txt</code> でクロールを拒否しています。GitHub Pages は公開状態のままなので、アクセス制限ではありません。</li>
+            <li>このサイトは検索エンジンに載らないように設定していますが、URLを知っている人は誰でも見られます。</li>
           </ul>
           <div class="guide-next">
             <div>
@@ -250,7 +243,7 @@
 
   <footer class="guide-footer">
     <div class="guide-footer__inner">
-      <p>うちのこ百科事典 — 非公式のC言語百科事典</p>
+      <p>うちのこ百科事典 — 非公式のうちの子百科事典</p>
       <nav aria-label="フッターリンク">
         <a href="index.html">記事</a>
         <a href="index.html#editor">編集モード</a>

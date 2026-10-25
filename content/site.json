@@ -4,7 +4,7 @@
     "badge": "PARODY",
     "mark": "assets/images/mark.svg",
     "tagline": "みんなでつくる、ちょっと自由な百科事典。",
-    "description": "C言語を題材にした、うちのこ百科事典。ピクシブ百科事典の外観を参考にした非公式パロディサイトで、本文・画像・カテゴリなどはブラウザ上で編集できます。",
+    "description": "創作キャラクター（うちの子）の紹介ページを作れる、うちのこ百科事典。ピクシブ百科事典の外観を参考にした非公式パロディサイトで、本文・画像はブラウザ上で編集できます。",
     "lang": "ja",
     "themeColor": "#314e6f"
   },
@@ -15,7 +15,6 @@
     "storageKey": "pixpedia-parody-notice-v1"
   },
   "header": {
-    "menuLabel": "メニューを開く",
     "searchPlaceholder": "けんさく...",
     "searchLabel": "サイト内を検索",
     "submitLabel": "この記事を編集",
@@ -25,48 +24,5 @@
   },
   "footer": {
     "disclaimer": "本サイト「うちのこ百科事典」は、pixiv株式会社、ピクシブ百科事典、および記事内で言及される各団体・人物とは関係のない非公式パロディです。"
-  },
-  "menu": {
-    "title": "メニュー",
-    "sections": [
-      {
-        "title": "この記事",
-        "links": [
-          {
-            "label": "ページ先頭",
-            "href": "#top"
-          },
-          {
-            "label": "概要",
-            "href": "#overview"
-          },
-          {
-            "label": "特徴",
-            "href": "#features"
-          },
-          {
-            "label": "派生言語",
-            "href": "#derived"
-          },
-          {
-            "label": "関連タグ",
-            "href": "#related-tags"
-          }
-        ]
-      },
-      {
-        "title": "サイト",
-        "links": [
-          {
-            "label": "編集モードを開く",
-            "href": "#editor"
-          },
-          {
-            "label": "このサイトについて",
-            "href": "#about"
-          }
-        ]
-      }
-    ]
   }
 }

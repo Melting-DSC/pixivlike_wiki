@@ -1,6 +1,7 @@
-# うちのこ百科事典（C言語）
+# うちのこ百科事典
 
-ピクシブ百科事典の記事ページを参考にした、C言語の非公式パロディ百科事典です。
+ピクシブ百科事典の記事ページを参考にした、創作キャラクター（うちの子）紹介ページ用の非公式パロディ百科事典です。
+初期データは見本の架空キャラクター「キャラクタ太郎」（画像は[いらすとや](https://www.irasutoya.com/)の素材）です。
 記事はブラウザで `content/*.json` から組み立てます。サーバー側の保存処理やビルド生成はなく、
 編集・保存・書き出しはすべてクライアントサイドで完結します。
 
@@ -48,15 +49,15 @@ PORT=8080 npm run dev
 ├── guide.html              # サイト利用者向けの使い方
 ├── robots.txt              # 検索エンジンのクロール拒否
 ├── content/
-│   ├── site.json           # サイト名・ヘッダー・フッター・メニュー
-│   └── article.json        # 記事本文・画像・タグ・履歴
+│   ├── site.json           # サイト名・ヘッダー・フッター
+│   └── article.json        # 記事本文・画像・タグ
 ├── assets/
 │   ├── css/style.css       # 記事ページとHTML書き出しのスタイル
 │   ├── css/editor.css      # 編集モードのスタイル
 │   ├── css/guide.css       # 使い方ページのスタイル
 │   ├── js/render.js        # 記事・検索インデックス・HTML書き出しのレンダラー
 │   ├── js/store.js         # content読込・localStorage・検証
-│   ├── js/main.js          # 記事の初期化、検索・ドロワー・ダイアログ
+│   ├── js/main.js          # 記事の初期化、検索、編集モード起動
 │   ├── js/editor.js        # 編集モードの状態管理・自動保存・画像
 │   ├── js/exporter.js      # JSON / HTML / PNG / PDF 書き出し
 │   └── images/             # ロゴと挿絵（オリジナルSVG）
@@ -124,7 +125,7 @@ PORT=8080 npm run dev
 
 ### 読み込み
 
-「書き出し」パネルの `#import-files` は次の両方を受け付けます。
+「書き出し/インポート」パネルの `#import-files` は次の両方を受け付けます。
 
 - 本サイトが書き出したJSONバンドル（`site` / `article` を持つもの。旧形式の `categories` は無視）
 - `site.json`、`article.json` の個別ファイル（複数選択可）
@@ -143,14 +144,12 @@ PORT=8080 npm run dev
 | `title` | string | 記事タイトル（必須） |
 | `reading` | string | 読み。ページタイトルに表示 |
 | `summary` | string | 冒頭の説明。meta descriptionにも使用 |
-| `breadcrumb` | array | `{ label, href? }` の配列。カテゴリ系の href はリンクにしない。編集モードでは編集不可 |
 | `hero` | object | `src`, `alt`, `caption`, `credit`。画像は押しても移動しない空リンク |
 | `actions` | array | `{ label, primary? }`。タイトル下のリンク。押しても移動しない空リンク |
 | `updated` | string | 最終更新日（`YYYY-MM-DD`） |
 | `version` | string | バージョン表記 |
 | `sections` | array | 本文セクション（必須） |
 | `relatedTags` | string[] | 関連タグ |
-| `history` | array | `{ date, note }` の配列。編集モードでは編集不可 |
 | `about` | object | `{ title, text }` |
 
 セクションの構造:
@@ -179,9 +178,10 @@ PORT=8080 npm run dev
 | `notice` | 上部の注意バー。`enabled`, `text`, `button`, `storageKey` |
 | `header` | 検索プレースホルダー、編集ボタン、ログインボタンの文言とリンク |
 | `footer` | `disclaimer`。フッターにはロゴと免責事項のみを表示 |
-| `menu` | モバイルドロワーの `title` と `sections` |
 
 `site.json` は編集モードからは編集できません。変更する場合はファイルを直接書き換えます。
+
+パンくずリスト・ハンバーガーメニュー・編集履歴は表示しません。ヘッダー左のハンバーガーボタンは見た目だけで、押しても何も起きません。旧データの `article.breadcrumb` / `article.history` / `site.menu` / `site.header.menuLabel` は読み込んでも無視されます。
 
 ## 本文ブロック
 
@@ -195,6 +195,8 @@ PORT=8080 npm run dev
 | `figure` | `src`, `alt`, `caption`, `credit?` | 画像とキャプション。`src` が空なら未設定表示 |
 | `quote` | `text`, `cite?` | 引用 |
 | `divider` | なし | 区切り線 |
+
+編集モードで追加・選択できるのは `paragraph` と `list` のみです。それ以外の種別はJSONを直接書いた場合に記事へ描画されますが、編集モードでは内容を編集できません（種類を段落かリストに変更するか、削除する）。
 
 未対応の `type` は検証時に警告され、記事には何も描画されません。
 
@@ -213,7 +215,6 @@ PORT=8080 npm run dev
 - URLは `WikiRender.safeHref()` で検証されます。`javascript:` などは `#` に置き換わります。
 - HTMLタグはエスケープされ、そのままでは埋め込まれません。
 - コードブロック内の `code` にはインライン記法を適用しません。
-- パンくず・モバイルメニューの `#categories` や `#category-*` へのリンクは、カテゴリ機能削除に伴いリンクにせず平文にします。
 
 ## 検証
 

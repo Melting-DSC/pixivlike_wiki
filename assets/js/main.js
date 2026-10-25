@@ -2,7 +2,7 @@
    Article page bootstrap + interactions.
 
    Loads content (defaults + localStorage overlay), renders the article in the
-   browser, and wires up search, the drawer, dialogs and the editor trigger.
+   browser, and wires up search, toasts and the editor trigger.
    Everything is client-side; there is no build step or save API.
    ========================================================================== */
 
@@ -137,7 +137,7 @@
     root.innerHTML = `<main class="page site-error" id="main">
   <h1>コンテンツを読み込めませんでした</h1>
   ${detail}
-  <p>このサイトは <code>content/*.json</code> をブラウザで読み込んで表示します。ローカルで確認する場合は <code>npm run dev</code> でサーバーを起動し、<code>http://localhost:4173/</code> を開いてください。</p>
+  <p>通信状態を確認して、ページを再読み込みしてください。パソコンに保存したファイルを直接開いた場合は表示できないため、公開されているURLから開いてください。</p>
   <p><a class="button button--blue" href="">再読み込み</a> <a class="button button--soft" href="guide.html">使い方を見る</a></p>
 </main>`;
   }
@@ -501,100 +501,6 @@
       signal,
     });
 
-    /* Mobile drawer */
-    const drawerOverlay = $("#drawer-overlay");
-    const drawer = drawerOverlay ? $(".drawer", drawerOverlay) : null;
-    const openMenuButton = $("[data-open-menu]", root);
-    let lastFocused = null;
-
-    const drawerFocusables = () => {
-      if (!drawer) return [];
-      return $$(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        drawer,
-      ).filter((el) => el.offsetParent !== null);
-    };
-
-    const onDrawerKeydown = (event) => {
-      if (event.key === "Escape") {
-        closeDrawer();
-        return;
-      }
-      if (event.key !== "Tab") return;
-      const focusables = drawerFocusables();
-      if (!focusables.length) return;
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    function openDrawer() {
-      if (!drawerOverlay) return;
-      lastFocused = document.activeElement;
-      drawerOverlay.hidden = false;
-      body.classList.add("is-menu-open");
-      openMenuButton?.setAttribute("aria-expanded", "true");
-      document.addEventListener("keydown", onDrawerKeydown, { signal });
-      window.requestAnimationFrame(() => drawer?.focus());
-    }
-
-    function closeDrawer() {
-      if (!drawerOverlay || drawerOverlay.hidden) return;
-      drawerOverlay.hidden = true;
-      body.classList.remove("is-menu-open");
-      openMenuButton?.setAttribute("aria-expanded", "false");
-      document.removeEventListener("keydown", onDrawerKeydown);
-      if (lastFocused instanceof HTMLElement) lastFocused.focus();
-    }
-
-    openMenuButton?.addEventListener("click", openDrawer, { signal });
-    $$(".drawer [data-close-menu]", root).forEach((button) =>
-      button.addEventListener("click", closeDrawer, { signal }),
-    );
-    drawerOverlay?.addEventListener(
-      "click",
-      (event) => {
-        if (event.target === drawerOverlay) closeDrawer();
-      },
-      { signal },
-    );
-    $$(".drawer a[href]", root).forEach((link) =>
-      link.addEventListener("click", closeDrawer, { signal }),
-    );
-
-    /* History dialog */
-    const historyDialog = $("#history-dialog", root);
-    const openHistory = () => {
-      if (!historyDialog) return;
-      if (typeof historyDialog.showModal === "function") {
-        if (!historyDialog.open) historyDialog.showModal();
-      } else {
-        historyDialog.setAttribute("open", "");
-      }
-    };
-    const closeHistory = () => {
-      if (!historyDialog) return;
-      if (typeof historyDialog.close === "function") historyDialog.close();
-      else historyDialog.removeAttribute("open");
-    };
-
-    $$("[data-close-dialog]", root).forEach((button) =>
-      button.addEventListener("click", closeHistory, { signal }),
-    );
-    historyDialog?.addEventListener(
-      "click",
-      (event) => {
-        if (event.target === historyDialog) closeHistory();
-      },
-      { signal },
-    );
-
     /* Search */
     const search = buildSearch(signal);
 
@@ -644,9 +550,6 @@
           showToast(action.dataset.message || "ここはパロディサイトなので、登録もログインも不要です。");
         } else if (action.dataset.action === "soon") {
           showToast(action.dataset.message || "この機能は準備中です。");
-        } else if (action.dataset.action === "history") {
-          event.preventDefault();
-          openHistory();
         }
       },
       { signal },

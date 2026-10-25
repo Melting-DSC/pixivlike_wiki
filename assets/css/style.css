@@ -201,27 +201,6 @@ a:hover {
   background: rgba(255, 255, 255, 0.12);
 }
 
-.icon-button--dark {
-  color: var(--text-2);
-}
-
-.icon-button--dark:hover {
-  background: #f0f0f0;
-}
-
-.text-button {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--link);
-  font-size: inherit;
-  cursor: pointer;
-}
-
-.text-button:hover {
-  text-decoration: underline;
-}
-
 /* ==========================================================================
    Parody notice (cookie-bar lookalike)
    ========================================================================== */
@@ -520,39 +499,13 @@ a:hover {
 }
 
 /* ==========================================================================
-   Page frame / breadcrumb
+   Page frame
    ========================================================================== */
 
 .page {
   width: min(100% - 48px, var(--page-width));
   margin: 0 auto;
-  padding: 0 0 64px;
-}
-
-.breadcrumb {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 5px;
-  min-height: 26px;
-  margin: 14px 0 20px;
-  color: var(--text-3);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.breadcrumb a {
-  color: var(--text-3);
-  white-space: nowrap;
-}
-
-.breadcrumb a:hover {
-  color: var(--link);
-}
-
-.breadcrumb__sep {
-  color: #b6bbc1;
-  font-size: 11px;
+  padding: 24px 0 64px;
 }
 
 .layout {
@@ -603,7 +556,7 @@ a:hover {
 .hero__image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .hero__overlay {
@@ -1392,18 +1345,6 @@ a.category-chip:hover {
   line-height: 23px;
 }
 
-.about__links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  align-items: center;
-  font-size: 11px !important;
-}
-
-.about__links a {
-  color: var(--link);
-}
-
 /* ==========================================================================
    Sidebar
    ========================================================================== */
@@ -1658,7 +1599,7 @@ a.category-chip:hover {
 }
 
 /* ==========================================================================
-   Back to top / toast / drawer / dialog
+   Back to top / toast
    ========================================================================== */
 
 .back-to-top {
@@ -1717,204 +1658,6 @@ a.category-chip:hover {
 .toast.is-visible {
   opacity: 1;
   transform: translate(-50%, 0);
-}
-
-/* Drawer -------------------------------------------------------------- */
-
-.drawer-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: rgba(15, 25, 38, 0.46);
-  animation: fade-in 0.18s ease;
-}
-
-.drawer {
-  width: min(88vw, 360px);
-  height: 100%;
-  padding: 18px 20px 28px;
-  overflow-y: auto;
-  background: #fff;
-  box-shadow: 16px 0 40px rgba(0, 0, 0, 0.18);
-  animation: slide-in 0.2s ease;
-}
-
-.drawer__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.drawer__title {
-  color: var(--text-1);
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.drawer__body {
-  padding-top: 10px;
-}
-
-.drawer-section {
-  margin-top: 16px;
-}
-
-.drawer-section h2 {
-  margin: 0 0 4px;
-  color: var(--text-3);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.drawer-section ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.drawer-section li a {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid #f2f2f2;
-  color: var(--text-2);
-  font-size: 13px;
-  text-decoration: none;
-}
-
-.drawer-section li a:hover {
-  color: var(--link);
-}
-
-.drawer-count {
-  color: var(--text-3);
-  font-size: 10px;
-}
-
-.drawer__cta {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 22px;
-}
-
-body.is-menu-open {
-  overflow: hidden;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slide-in {
-  from {
-    transform: translateX(-28px);
-    opacity: 0.4;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* Dialog -------------------------------------------------------------- */
-
-.dialog {
-  width: min(480px, calc(100% - 32px));
-  max-height: min(78vh, 640px);
-  padding: 0;
-  overflow: auto;
-  border: 0;
-  border-radius: var(--radius-lg);
-  background: #fff;
-  color: var(--text-2);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
-}
-
-.dialog::backdrop {
-  background: rgba(14, 24, 36, 0.52);
-}
-
-.dialog__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 15px 20px;
-  border-bottom: 1px solid var(--border);
-}
-
-.dialog__head h2 {
-  margin: 0;
-  color: var(--text-1);
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.dialog__close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--text-3);
-  font-size: 22px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.dialog__close:hover {
-  background: #f2f2f2;
-  color: var(--text-1);
-}
-
-.history-list {
-  margin: 0;
-  padding: 8px 20px;
-  list-style: none;
-}
-
-.history-list li {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  padding: 9px 0;
-  border-bottom: 1px solid #f2f2f2;
-  font-size: 12px;
-  line-height: 1.7;
-}
-
-.history-list li:last-child {
-  border-bottom: 0;
-}
-
-.history-list time {
-  flex: none;
-  color: var(--text-3);
-  font-family: var(--font-mono);
-  font-size: 10px;
-}
-
-.dialog__foot {
-  display: flex;
-  justify-content: flex-end;
-  padding: 12px 20px 16px;
-  border-top: 1px solid var(--border);
 }
 
 /* ==========================================================================
@@ -2058,13 +1801,10 @@ body.is-menu-open {
 
   .page {
     width: calc(100% - 24px);
+    padding-top: 12px;
     padding-bottom: 40px;
   }
 
-  .breadcrumb {
-    margin: 10px 0 12px;
-    font-size: 11px;
-  }
 
   .article {
     padding: 16px;
@@ -2183,7 +1923,7 @@ body.is-menu-open {
   .hero__image {
     width: 100%;
     height: 190px;
-    object-fit: cover;
+    object-fit: contain;
   }
 
   .hero__overlay {
@@ -2281,14 +2021,11 @@ body.is-menu-open {
 
   .parody-notice,
   .site-header,
-  .breadcrumb,
   .sidebar,
   .site-footer,
   .back-to-top,
   .toc > summary svg,
-  .dialog,
-  .toast,
-  .drawer-overlay {
+  .toast {
     display: none !important;
   }
 

@@ -31,14 +31,18 @@
   const BLOCK_TYPES = [
     ["paragraph", "段落"],
     ["list", "リスト"],
-    ["code", "コード"],
-    ["callout", "注記ボックス"],
-    ["figure", "画像"],
-    ["tags", "タグ"],
-    ["quote", "引用"],
-    ["divider", "区切り線"],
   ];
-  const BLOCK_LABELS = Object.fromEntries(BLOCK_TYPES);
+  // Other block types are still rendered on the article page, but the editor
+  // only offers paragraph and list. These labels name them in the editor.
+  const BLOCK_LABELS = {
+    ...Object.fromEntries(BLOCK_TYPES),
+    code: "コード",
+    callout: "注記ボックス",
+    figure: "画像",
+    tags: "タグ",
+    quote: "引用",
+    divider: "区切り線",
+  };
 
   let activePanel = "basic";
   let dirty = false;
@@ -134,7 +138,7 @@
     if (statusEl) {
       statusEl.title = uploaded
         ? "アップロードした画像は保存されません。再訪時に選び直してください。"
-        : "編集内容はこのブラウザのlocalStorageに保存されています。";
+        : "編集内容はこのブラウザに保存されています。";
     }
     updateSavebar();
     if (!silent) showToast("このブラウザに保存しました。", "success");
@@ -210,7 +214,7 @@
     errorBox.hidden = false;
 
     const detail = error?.message ? `（${error.message}）` : "";
-    errorMessage.textContent = `${detail} JSONを読み込むか、サーバー経由でページを開き直してください。`;
+    errorMessage.textContent = `${detail} ページを再読み込みするか、保存しておいたJSONファイルを読み込んでください。`;
     setStatus("error", "読み込みエラー");
   }
 
@@ -292,13 +296,21 @@
 </div>`,
           )
           .join("")
-      : emptyState("ヘッダーリンクはまだありません。");
+      : emptyState("リンクはまだありません。");
   }
 
   /* ----------------------------- sections ------------------------------- */
 
-  const blockTypeOptions = (current) =>
-    BLOCK_TYPES.map(([value, label]) => `<option value="${value}"${selected(value, current)}>${label}</option>`).join("");
+  function blockTypeOptions(current) {
+    const options = BLOCK_TYPES.map(
+      ([value, label]) => `<option value="${value}"${selected(value, current)}>${label}</option>`,
+    );
+    // Keep a block of another type selectable as-is until the user changes it.
+    if (current && !BLOCK_TYPES.some(([value]) => value === current)) {
+      options.unshift(`<option value="${attr(current)}" selected disabled>${esc(BLOCK_LABELS[current] || current)}</option>`);
+    }
+    return options.join("");
+  }
 
   function renderSections() {
     const container = $("#sections");
@@ -311,28 +323,28 @@
             const blocks = section.blocks ?? [];
             const blockHTML = blocks.length
               ? blocks.map((block, blockIndex) => blockEditorHTML(block, sectionIndex, blockIndex)).join("")
-              : emptyState("この節にはまだブロックがありません。");
+              : emptyState("このセクションにはまだブロックがありません。");
 
             return `<article class="section-editor" data-section="${sectionIndex}">
   <header class="section-editor__head">
     <span class="section-editor__index">${sectionIndex + 1}</span>
-    <input class="section-editor__title-input" type="text" data-path="article.sections.${sectionIndex}.title" value="${attr(section.title)}" placeholder="節タイトル" aria-label="節 ${sectionIndex + 1} のタイトル">
-    <select data-path="article.sections.${sectionIndex}.level" data-type="number" aria-label="見出しレベル">
-      <option value="2"${selected(2, section.level)}>見出し2（大）</option>
-      <option value="3"${selected(3, section.level)}>見出し3（小）</option>
+    <input class="section-editor__title-input" type="text" data-path="article.sections.${sectionIndex}.title" value="${attr(section.title)}" placeholder="見出し" aria-label="セクション ${sectionIndex + 1} の見出し">
+    <select data-path="article.sections.${sectionIndex}.level" data-type="number" aria-label="見出しの大きさ">
+      <option value="2"${selected(2, section.level)}>大見出し</option>
+      <option value="3"${selected(3, section.level)}>小見出し</option>
     </select>
     <div class="section-editor__controls">
       <button type="button" class="row-icon-button" data-move-section="${sectionIndex}" data-delta="-1" aria-label="上へ移動"${sectionIndex === 0 ? " disabled" : ""}>↑</button>
       <button type="button" class="row-icon-button" data-move-section="${sectionIndex}" data-delta="1" aria-label="下へ移動"${sectionIndex === sections.length - 1 ? " disabled" : ""}>↓</button>
-      <button type="button" class="row-icon-button" data-remove-section="${sectionIndex}" aria-label="この節を削除">×</button>
+      <button type="button" class="row-icon-button" data-remove-section="${sectionIndex}" aria-label="このセクションを削除">×</button>
     </div>
   </header>
   <div class="section-editor__meta">
     <label class="field">
-      <span class="field__label">ID（アンカー）</span>
-      <input type="text" data-path="article.sections.${sectionIndex}.id" value="${attr(section.id)}" placeholder="section-${sectionIndex + 1}" aria-label="節 ${sectionIndex + 1} のID">
+      <span class="field__label">リンク用の名前（任意）</span>
+      <input type="text" data-path="article.sections.${sectionIndex}.id" value="${attr(section.id)}" placeholder="section-${sectionIndex + 1}" aria-label="セクション ${sectionIndex + 1} のリンク用の名前">
     </label>
-    <p>英数字とハイフン推奨。目次・検索結果・本文内リンクの <code>#${esc(section.id || `section-${sectionIndex + 1}`)}</code> に使われます。</p>
+    <p>目次や検索からこのセクションへ移動するときに使われます。半角英数字とハイフン（-）で、ほかのセクションと重ならない名前にしてください。ふだんは変更不要です。</p>
   </div>
   <div class="block-list">${blockHTML}</div>
   <footer class="section-editor__foot">
@@ -340,12 +352,12 @@
       <select data-add-block-type="${sectionIndex}" aria-label="追加するブロックの種類">${blockTypeOptions("paragraph")}</select>
       <button type="button" class="editor-mini-button" data-add-block="${sectionIndex}">＋ ブロックを追加</button>
     </div>
-    <button type="button" class="editor-mini-button editor-mini-button--danger" data-remove-section="${sectionIndex}">この節を削除</button>
+    <button type="button" class="editor-mini-button editor-mini-button--danger" data-remove-section="${sectionIndex}">このセクションを削除</button>
   </footer>
 </article>`;
           })
           .join("")
-      : emptyState("節はまだありません。「＋ 節を追加」から始めてください。");
+      : emptyState("セクションはまだありません。「＋ セクションを追加」から始めてください。");
 
     updateStats();
   }
@@ -374,14 +386,14 @@
         return `<label class="field field--full">
   <span class="field__label">本文</span>
   <textarea rows="3" data-path="${path}.text" placeholder="段落の文章">${esc(block.text || "")}</textarea>
-  <span class="field__hint"><code>[[語句]]</code> / <code>**強調**</code> / <code>\`コード\`</code> / <code>[表示名](URL)</code> が使えます。</span>
+  <span class="field__hint"><code>**太字**</code> のように <code>**</code> で囲むと太字、<code>[表示する文字](https://〜)</code> と書くとリンクになります。</span>
 </label>`;
 
       case "list":
         return `<div class="field-grid">
   <label class="field">
     <span class="field__label">リスト見出し（任意）</span>
-    <input type="text" data-path="${path}.title" value="${attr(block.title || "")}" placeholder="C言語あるある">
+    <input type="text" data-path="${path}.title" value="${attr(block.title || "")}" placeholder="好きなもの">
   </label>
   <label class="field field--check">
     <input type="checkbox" data-path="${path}.ordered"${checked(block.ordered)}>
@@ -393,97 +405,8 @@
   </label>
 </div>`;
 
-      case "code":
-        return `<div class="field-grid">
-  <label class="field">
-    <span class="field__label">ファイル名</span>
-    <input type="text" data-path="${path}.filename" value="${attr(block.filename || "")}" placeholder="hello.c">
-  </label>
-  <label class="field">
-    <span class="field__label">言語</span>
-    <input type="text" data-path="${path}.language" value="${attr(block.language || "")}" placeholder="c">
-  </label>
-  <label class="field field--full">
-    <span class="field__label">コード</span>
-    <textarea class="code-textarea" rows="8" data-path="${path}.code" spellcheck="false">${esc(block.code || "")}</textarea>
-  </label>
-</div>`;
-
-      case "callout":
-        return `<div class="field-grid">
-  <label class="field">
-    <span class="field__label">種類</span>
-    <select data-path="${path}.tone">
-      <option value="info"${selected("info", block.tone)}>情報（青）</option>
-      <option value="warn"${selected("warn", block.tone)}>注意（黄）</option>
-      <option value="parody"${selected("parody", block.tone)}>パロディ（紫）</option>
-    </select>
-  </label>
-  <label class="field">
-    <span class="field__label">見出し（任意）</span>
-    <input type="text" data-path="${path}.title" value="${attr(block.title || "")}" placeholder="このページについて">
-  </label>
-  <label class="field field--full">
-    <span class="field__label">本文</span>
-    <textarea rows="2" data-path="${path}.text">${esc(block.text || "")}</textarea>
-  </label>
-</div>`;
-
-      case "figure": {
-        const src = block.src || "";
-        const preview = src
-          ? `<div class="image-preview"><img src="${attr(src)}" alt="" data-image-preview="${path}.src"></div>`
-          : `<p class="block-editor__empty">画像が設定されていません。</p>`;
-        return `<div class="field-grid">
-  <label class="field field--full">
-    <span class="field__label">画像をアップロード</span>
-    <input type="file" accept="image/*" data-upload-image="${path}.src">
-    <span class="field__hint">アップロード画像はブラウザに保存されません。再訪時は再選択してください。</span>
-  </label>
-  <label class="field field--full">
-    <span class="field__label">画像パス</span>
-    <input type="text" data-path="${path}.src" value="${attr(src)}" placeholder="assets/images/pointer-map.svg">
-  </label>
-  <label class="field field--full">
-    <span class="field__label">代替テキスト</span>
-    <input type="text" data-path="${path}.alt" value="${attr(block.alt || "")}">
-  </label>
-  <label class="field">
-    <span class="field__label">キャプション</span>
-    <input type="text" data-path="${path}.caption" value="${attr(block.caption || "")}">
-  </label>
-  <label class="field">
-    <span class="field__label">クレジット</span>
-    <input type="text" data-path="${path}.credit" value="${attr(block.credit || "")}">
-  </label>
-  <div class="field field--full field--preview">${preview}</div>
-</div>`;
-      }
-
-      case "tags":
-        return `<label class="field field--full">
-  <span class="field__label">タグ（1行に1つ）</span>
-  <textarea rows="4" data-path="${path}.items" data-transform="lines" placeholder="プログラミング言語&#10;ポインタ">${esc((block.items || []).join("\n"))}</textarea>
-  <span class="field__hint">本文中のタグボタンになります。検索にも追加されます。</span>
-</label>`;
-
-      case "quote":
-        return `<div class="field-grid">
-  <label class="field field--full">
-    <span class="field__label">引用文</span>
-    <textarea rows="3" data-path="${path}.text">${esc(block.text || "")}</textarea>
-  </label>
-  <label class="field field--full">
-    <span class="field__label">出典（任意）</span>
-    <input type="text" data-path="${path}.cite" value="${attr(block.cite || "")}">
-  </label>
-</div>`;
-
-      case "divider":
-        return `<p class="block-editor__empty">区切り線を表示します。設定はありません。</p>`;
-
       default:
-        return `<p class="block-editor__empty">未対応のブロック種別「${esc(block.type)}」です。種別を変更してください。</p>`;
+        return `<p class="block-editor__empty">「${esc(BLOCK_LABELS[block.type] || block.type)}」ブロックは編集モードでは編集できません。記事にはそのまま表示されます。内容を変えるには、種類を「段落」か「リスト」に変更してください。</p>`;
     }
   }
 
@@ -491,18 +414,6 @@
     switch (type) {
       case "list":
         return { type: "list", title: "", ordered: false, items: [""] };
-      case "code":
-        return { type: "code", filename: "snippet.c", language: "c", code: "" };
-      case "callout":
-        return { type: "callout", tone: "info", title: "", text: "" };
-      case "figure":
-        return { type: "figure", src: "", alt: "", caption: "", credit: "" };
-      case "tags":
-        return { type: "tags", items: [] };
-      case "quote":
-        return { type: "quote", text: "", cite: "" };
-      case "divider":
-        return { type: "divider" };
       case "paragraph":
       default:
         return { type: "paragraph", text: "" };
@@ -554,7 +465,7 @@
     sections.push({
       id,
       level: 2,
-      title: "新しい節",
+      title: "新しいセクション",
       blocks: [{ type: "paragraph", text: "" }],
     });
     renderSections();
@@ -566,7 +477,7 @@
   }
 
   function removeSection(index) {
-    if (!confirmRemove("この節と中のブロックを削除しますか？")) return;
+    if (!confirmRemove("このセクションと中のブロックを削除しますか？")) return;
     state.article.sections.splice(index, 1);
     renderSections();
     markDirty();
@@ -652,13 +563,6 @@
 
     if (path.startsWith("article.hero.")) updateHeroPreview();
     if (path === "article.relatedTags") updateStats();
-    if (path.endsWith(".src")) {
-      const preview = $(`img[data-image-preview="${path}"]`);
-      if (preview) {
-        preview.setAttribute("src", field.value);
-        preview.hidden = !field.value;
-      }
-    }
 
     markDirty();
   }
@@ -683,11 +587,7 @@
       const dataUrl = await readFileAsDataURL(file);
       setPath(state, path, dataUrl);
 
-      if (path.startsWith("article.hero.")) {
-        fillStaticFields();
-      } else if (path.startsWith("article.sections.")) {
-        renderSections();
-      }
+      if (path.startsWith("article.hero.")) fillStaticFields();
       markDirty();
       showToast("画像を設定しました。この画像はブラウザに保存されません。", "info", 5200);
     } catch (error) {
@@ -816,7 +716,7 @@
     };
 
     if (!next.site || !next.article) {
-      showToast("site・article を含むJSONを選択してください。", "error", 6000);
+      showToast("このサイトで書き出したJSONファイルを選択してください。", "error", 6000);
       if (failures.length) console.warn("読み込み失敗:", failures);
       return;
     }
@@ -839,7 +739,7 @@
     markDirty();
     persistNow({ silent: true });
     showToast(
-      `${Object.keys(loadedFiles).length}ファイルを読み込み、このブラウザに保存しました。`,
+      "ファイルを読み込み、このブラウザに保存しました。",
       "success",
       5200,
     );
