@@ -301,6 +301,10 @@
       });
     }
 
+    if (article.categories !== undefined && !Array.isArray(article.categories)) {
+      warnings.push("カテゴリのデータが正しい形式ではありません（表示されません）。");
+    }
+
     if (article.hero && !article.hero.src) {
       warnings.push("メイン画像が設定されていません。編集モードからアップロードするか、画像のURLを入力してください。");
     }

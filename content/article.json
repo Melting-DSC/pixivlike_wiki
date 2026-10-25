@@ -1,6 +1,10 @@
 {
   "title": "キャラクタ太郎",
   "reading": "きゃらくたたろう",
+  "categories": [
+    "オリジナル",
+    "キャラクター"
+  ],
   "summary": "とある会社で働く、ごく普通のサラリーマン。このページは記事の書き方を試すための見本です。",
   "hero": {
     "src": "assets/images/character-taro.png",

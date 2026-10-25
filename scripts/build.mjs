@@ -28,6 +28,10 @@ function validateArticle(article) {
   if (!article?.title) fail("content/article.json: title は必須です");
   if (!Array.isArray(article.sections)) fail("content/article.json: sections は配列で指定してください");
 
+  if (article.categories !== undefined && !Array.isArray(article.categories)) {
+    warnings.push("categories は文字列の配列で指定してください（表示されません）");
+  }
+
   const ids = new Set();
   for (const [index, section] of article.sections.entries()) {
     const id = String(section.id || "").trim() || `section-${index + 1}`;

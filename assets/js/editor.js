@@ -625,6 +625,7 @@
 
     if (article) {
       article.relatedTags = (article.relatedTags ?? []).filter(Boolean);
+      article.categories = (article.categories ?? []).filter(Boolean);
       article.actions = (article.actions ?? []).filter((row) => String(row.label ?? "").trim());
       article.sections = (article.sections ?? []).map((section) => ({
         ...section,

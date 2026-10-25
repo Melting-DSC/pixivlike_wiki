@@ -235,6 +235,15 @@ ${blocks}
       .join("");
   }
 
+  // Gray labels above the article title. Plain text, not links.
+  function renderCategories(article) {
+    const items = (Array.isArray(article.categories) ? article.categories : [])
+      .map((item) => String(item ?? "").trim())
+      .filter(Boolean);
+    if (!items.length) return "";
+    return `<ul class="article-categories" aria-label="カテゴリ">${items.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>`;
+  }
+
   function renderToc(sections) {
     return sections
       .map(
@@ -266,6 +275,7 @@ ${blocks}
           </figure>
 
           <div class="article-head__main">
+            ${renderCategories(article)}
             <div class="title-row">
               <h1 class="article-title" id="article-name">${esc(article.title || "無題の記事")}</h1>
               <button type="button" class="bookmark" data-action="bookmark" aria-pressed="false" aria-label="この記事を保存">

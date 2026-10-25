@@ -101,6 +101,11 @@
                   <input type="text" data-path="article.reading" placeholder="きゃらくたたろう">
                 </label>
                 <label class="field field--full">
+                  <span class="field__label">カテゴリ</span>
+                  <input type="text" data-path="article.categories" data-transform="csv" placeholder="オリジナル, キャラクター">
+                  <span class="field__hint">記事タイトルの上に灰色で並びます。カンマ（,）または読点（、）で区切って入力します。</span>
+                </label>
+                <label class="field field--full">
                   <span class="field__label">概要文</span>
                   <textarea rows="3" data-path="article.summary" placeholder="記事の冒頭に表示される短い説明"></textarea>
                   <span class="field__hint">文字を <code>**</code> で囲むと太字になります（例：<code>**太字**</code>）。</span>
