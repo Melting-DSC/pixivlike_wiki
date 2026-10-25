@@ -123,6 +123,25 @@
   const CAPTURE_WIDTH = 900;
   const CAPTURE_PADDING = 32;
   const MAX_CANVAS = 16384;
+  const IMAGE_DECODE_TIMEOUT = 3000;
+
+  // Images must be loaded before the stage is measured, otherwise the capture
+  // height is too short and the bottom of the article is cut off. decode()
+  // alone is not enough (it can stay pending for a stage image), so wait for
+  // load/error first and cap decode().
+  async function waitForImage(image) {
+    if (!image.complete) {
+      await new Promise((resolve) => {
+        image.addEventListener("load", resolve, { once: true });
+        image.addEventListener("error", resolve, { once: true });
+      });
+    }
+    if (!image.decode) return;
+    await Promise.race([
+      image.decode().catch(() => {}),
+      new Promise((resolve) => window.setTimeout(resolve, IMAGE_DECODE_TIMEOUT)),
+    ]);
+  }
 
   async function captureArticle(state) {
     const css = await fetchText("assets/css/style.css");
@@ -131,53 +150,61 @@
     parser.innerHTML = WikiRender.renderExportBody(state);
     const article = parser.querySelector(".article");
     if (!article) throw new Error("書き出す記事が見つかりませんでした。");
+    // Lazy images never load inside the off-screen stage.
+    for (const image of article.querySelectorAll("img[loading]")) image.removeAttribute("loading");
     await inlineImages(article);
 
     const stage = document.createElement("div");
     stage.className = "capture-stage";
     stage.setAttribute("aria-hidden", "true");
+    // Inside <foreignObject> there is no <body>, so the body font rules from
+    // style.css are repeated on the stage to keep measurement and rendering in sync.
     stage.innerHTML = `<style>${css}</style>
 <style>
-.capture-stage{width:${CAPTURE_WIDTH}px;padding:${CAPTURE_PADDING}px;box-sizing:border-box;background:#eef1f4;}
+.capture-stage{width:${CAPTURE_WIDTH}px;padding:${CAPTURE_PADDING}px;box-sizing:border-box;background:#eef1f4;color:var(--text-2);font-family:var(--font-sans);font-size:14px;line-height:1.6;text-rendering:optimizeLegibility;}
 .capture-stage .article{box-shadow:0 8px 26px rgba(20,35,55,.10);}
 .capture-stage .section__anchor{display:none;}
 </style>
 ${article.outerHTML}`;
 
-    stage.style.position = "fixed";
-    stage.style.left = "-10000px";
-    stage.style.top = "0";
-    stage.style.zIndex = "-1";
-    document.body.appendChild(stage);
+    // The stage itself must stay in normal flow: its inline style is
+    // serialized into the SVG, so `position: fixed; left: -10000px` on it
+    // would render the capture off-canvas (blank image). Hide an outer host
+    // instead, which is not part of the serialized markup.
+    const host = document.createElement("div");
+    host.setAttribute("aria-hidden", "true");
+    host.style.position = "fixed";
+    host.style.left = "-10000px";
+    host.style.top = "0";
+    host.style.zIndex = "-1";
+    host.appendChild(stage);
+    document.body.appendChild(host);
 
     try {
       if (document.fonts?.ready) await document.fonts.ready;
-      await Promise.all(
-        Array.from(stage.querySelectorAll("img")).map((image) =>
-          image.decode ? image.decode().catch(() => {}) : Promise.resolve(),
-        ),
-      );
+      await Promise.all(Array.from(stage.querySelectorAll("img")).map(waitForImage));
 
       const width = Math.ceil(stage.getBoundingClientRect().width) || CAPTURE_WIDTH;
       const height = Math.max(1, Math.ceil(stage.scrollHeight));
 
+      // HTML is only rendered inside an SVG through <foreignObject>; placed
+      // directly under <svg> it is ignored and only the background remains.
+      // XMLSerializer emits the XHTML namespace on the stage element itself.
       const serializer = new XMLSerializer();
       const stageXML = serializer.serializeToString(stage);
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${stageXML}</svg>`;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><foreignObject x="0" y="0" width="100%" height="100%">${stageXML}</foreignObject></svg>`;
 
-      const svgBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
-      const svgURL = URL.createObjectURL(svgBlob);
+      // Load the SVG from a data URL, not a blob URL: Chrome taints the canvas
+      // when a blob-URL SVG containing <foreignObject> is drawn, which makes
+      // toBlob() fail. Base64 via FileReader keeps long Japanese text compact.
+      const svgURL = await blobToDataURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
       const image = new Image();
       image.decoding = "sync";
-      try {
-        await new Promise((resolve, reject) => {
-          image.onload = resolve;
-          image.onerror = () => reject(new Error("記事の描画に失敗しました。"));
-          image.src = svgURL;
-        });
-      } finally {
-        URL.revokeObjectURL(svgURL);
-      }
+      await new Promise((resolve, reject) => {
+        image.onload = resolve;
+        image.onerror = () => reject(new Error("記事の描画に失敗しました。"));
+        image.src = svgURL;
+      });
 
       let scale = Math.min(2, MAX_CANVAS / width, MAX_CANVAS / height);
       if (!Number.isFinite(scale) || scale <= 0) scale = 1;
@@ -193,7 +220,7 @@ ${article.outerHTML}`;
 
       return { canvas, width, height, scale };
     } finally {
-      stage.remove();
+      host.remove();
     }
   }
 
@@ -217,6 +244,23 @@ ${article.outerHTML}`;
    * PDF (minimal writer, JPEG image split across A4 pages)
    * ------------------------------------------------------------------ */
 
+  // Page layout in PDF points (origin at the bottom-left). Each page clips a
+  // fixed window at the top of the page and shifts the full-height image up
+  // by `segmentTop`, so page N shows the N-th slice of the capture.
+  function planPdfPages(scaledHeight, usableHeight, pageHeight, margin) {
+    const pageCount = Math.max(1, Math.ceil(scaledHeight / usableHeight));
+    return Array.from({ length: pageCount }, (_, index) => {
+      const segmentTop = index * usableHeight;
+      const segmentHeight = Math.max(0.1, Math.min(usableHeight, scaledHeight - segmentTop));
+      return {
+        segmentTop,
+        segmentHeight,
+        clipBottom: pageHeight - margin - segmentHeight,
+        imageBottom: pageHeight - margin - scaledHeight + segmentTop,
+      };
+    });
+  }
+
   function buildPDF(jpegBytes, imageWidth, imageHeight) {
     const encoder = new TextEncoder();
     const chunks = [];
@@ -236,12 +280,15 @@ ${article.outerHTML}`;
     const usableHeight = pageHeight - margin * 2;
     const scale = usableWidth / imageWidth;
     const scaledHeight = imageHeight * scale;
-    const pageCount = Math.max(1, Math.ceil(scaledHeight / usableHeight));
+    const pages = planPdfPages(scaledHeight, usableHeight, pageHeight, margin);
+    const pageCount = pages.length;
 
     const totalObjects = 3 + pageCount * 2;
     const pageId = (index) => 4 + index;
     const contentId = (index) => 4 + pageCount + index;
 
+    // Header line first, then a binary comment marking the file as binary.
+    pushText("%PDF-1.4\n");
     pushBytes(new Uint8Array([0x25, 0xe2, 0xe3, 0xcf, 0xd3, 0x0a]));
 
     const begin = (id) => {
@@ -277,13 +324,10 @@ ${article.outerHTML}`;
     }
 
     for (let index = 0; index < pageCount; index += 1) {
-      const segmentTop = index * usableHeight;
-      const segmentHeight = Math.max(0.1, Math.min(usableHeight, scaledHeight - segmentTop));
-      const bottom = pageHeight - margin - segmentTop - segmentHeight;
-      const imageBottom = pageHeight - margin - segmentTop - scaledHeight;
+      const { segmentHeight, clipBottom, imageBottom } = pages[index];
       const stream = [
         "q",
-        `${margin.toFixed(2)} ${bottom.toFixed(2)} ${usableWidth.toFixed(2)} ${segmentHeight.toFixed(2)} re`,
+        `${margin.toFixed(2)} ${clipBottom.toFixed(2)} ${usableWidth.toFixed(2)} ${segmentHeight.toFixed(2)} re`,
         "W n",
         `${usableWidth.toFixed(2)} 0 0 ${scaledHeight.toFixed(2)} ${margin.toFixed(2)} ${imageBottom.toFixed(2)} cm`,
         "/Im0 Do",
