@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">C言語アイコン</title>
+  <desc id="desc">青い六角形の中に、大きなCの字をかたどったリングと、1972という文字が描かれています。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4faff"/>
+      <stop offset="1" stop-color="#dcecfb"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0096fa"/>
+      <stop offset=".55" stop-color="#1c6fb8"/>
+      <stop offset="1" stop-color="#123f6b"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#123f6b" flood-opacity=".16"/>
+    </filter>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#9dc8e8" stroke-opacity=".35" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="512" height="512" rx="36" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="36" fill="url(#grid)"/>
+
+  <path d="M256 46 442 154v204L256 466 70 358V154L256 46Z" fill="#ffffff" fill-opacity=".5" stroke="#9dc8e8" stroke-width="3"/>
+  <path d="M256 78 414 170v172L256 434 98 342V170L256 78Z" fill="none" stroke="#ffffff" stroke-opacity=".9" stroke-width="2"/>
+
+  <g filter="url(#shadow)">
+    <circle cx="256" cy="250" r="112" fill="none" stroke="url(#ring)" stroke-width="54" stroke-linecap="round" stroke-dasharray="523 181" transform="rotate(32 256 250)"/>
+  </g>
+
+  <g fill="#123f6b">
+    <text x="90" y="112" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" letter-spacing="3" opacity=".7">SINCE</text>
+    <text x="90" y="146" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="30" font-weight="700">1972</text>
+    <text x="422" y="112" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" opacity=".7">&lt;/&gt;</text>
+    <text x="422" y="146" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16" opacity=".55">0x1F</text>
+  </g>
+
+  <g transform="translate(256 250)">
+    <path d="M-24-18h-18v36h18M24-18h18v36H24" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="0" cy="0" r="8" fill="#d1ff1a"/>
+  </g>
+
+  <g fill="#123f6b">
+    <text x="256" y="394" text-anchor="middle" font-family="'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', sans-serif" font-size="24" font-weight="700" letter-spacing="8">C LANGUAGE</text>
+    <text x="256" y="424" text-anchor="middle" font-family="'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', sans-serif" font-size="14" letter-spacing="3" opacity=".6">A PROGRAMMING LANGUAGE</text>
+  </g>
+</svg>

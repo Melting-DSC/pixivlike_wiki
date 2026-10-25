@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>編集ガイド｜うちのこ百科事典</title>
+  <meta name="description" content="うちのこ百科事典の編集ガイド。起動方法、エディタの使い方、JSONのデータ構造、本文ブロック、インライン記法、画像、公開手順をまとめています。">
+  <meta name="robots" content="noindex, nofollow, noarchive, noimageindex">
+  <meta name="theme-color" content="#314e6f">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" href="assets/images/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/guide.css">
+</head>
+<body>
+  <a class="skip-link" href="#guide-main">本文へスキップ</a>
+
+  <header class="guide-header">
+    <div class="guide-header__inner">
+      <a class="brand" href="index.html" aria-label="うちのこ百科事典の記事へ">
+        <img src="assets/images/mark.svg" alt="" width="32" height="32">
+        <span class="brand__name">うちのこ百科事典</span>
+        <span class="brand__badge">PARODY</span>
+      </a>
+      <nav class="guide-nav" aria-label="サイト内リンク">
+        <a href="index.html">記事</a>
+        <a href="editor.html">エディタ</a>
+        <a href="guide.html" aria-current="page">ガイド</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="guide-shell" id="guide-main">
+    <div class="guide-intro">
+      <nav class="breadcrumb" aria-label="パンくずリスト">
+        <a href="index.html">うちのこ百科事典</a>
+        <span aria-hidden="true">›</span>
+        <span aria-current="page">編集ガイド</span>
+      </nav>
+      <p class="eyebrow">CONTENT GUIDE</p>
+      <h1>編集ガイド</h1>
+      <p class="lead">
+        このサイトは、3つのJSONファイルと小さなビルドスクリプトで動いています。
+        文章・画像・カテゴリ・項目数はすべてデータから生成されるので、HTMLを直接編集する必要はありません。
+      </p>
+      <div class="intro-actions">
+        <a class="button button--blue" href="editor.html">エディタを開く</a>
+        <a class="button button--soft" href="#quick-start">まずは起動する</a>
+      </div>
+      <dl class="intro-stats">
+        <div><dt>ビルド</dt><dd>Node.js 18+ / 依存パッケージなし</dd></div>
+        <div><dt>データ</dt><dd><code>content/*.json</code> の3ファイル</dd></div>
+        <div><dt>出力</dt><dd>ルートの <code>index.html</code></dd></div>
+      </dl>
+    </div>
+
+    <div class="guide-layout">
+      <aside class="guide-toc" aria-label="目次">
+        <details open>
+          <summary>目次</summary>
+          <ol>
+            <li><a href="#quick-start">クイックスタート</a></li>
+            <li><a href="#editor">エディタの使い方</a></li>
+            <li><a href="#data-structure">データ構造</a></li>
+            <li><a href="#blocks">本文ブロック</a></li>
+            <li><a href="#inline">インライン記法</a></li>
+            <li><a href="#images">画像</a></li>
+            <li><a href="#computed">自動計算されるもの</a></li>
+            <li><a href="#publish">公開と書き出し</a></li>
+            <li><a href="#notes">注意事項</a></li>
+          </ol>
+        </details>
+      </aside>
+
+      <article class="guide-content">
+        <section id="quick-start">
+          <h2>クイックスタート</h2>
+          <p>Node.js 18以降を用意して、プロジェクトのルートで次を実行します。</p>
+          <div class="code-card">
+            <div class="code-card__bar"><span>terminal</span><span>bash</span></div>
+            <pre><code>npm run dev</code></pre>
+          </div>
+          <p>表示されたURLをブラウザで開きます。</p>
+          <div class="link-cards">
+            <a href="index.html"><span>記事ページ</span><code>相対パス: index.html</code></a>
+            <a href="editor.html"><span>コンテンツエディタ</span><code>相対パス: editor.html</code></a>
+          </div>
+          <table>
+            <thead><tr><th>コマンド</th><th>動作</th></tr></thead>
+            <tbody>
+              <tr><td><code>npm run dev</code></td><td>ローカルサーバーを起動し、<code>content/</code> の変更を監視して自動ビルドします。</td></tr>
+              <tr><td><code>npm run build</code></td><td><code>index.html</code> を一度だけ再生成します。</td></tr>
+              <tr><td><code>npm start</code></td><td><code>npm run dev</code> と同じです。</td></tr>
+              <tr><td><code>npm run preview</code></td><td>監視なしで静的ファイルを配信します。</td></tr>
+            </tbody>
+          </table>
+          <div class="callout callout--info">
+            <strong>ビルドはNode.jsだけで動きます。</strong>
+            <p>npm installは不要です。外部ライブラリやビルドツールは使っていません。</p>
+          </div>
+        </section>
+
+        <section id="editor">
+          <h2>エディタの使い方</h2>
+          <p>
+            <a href="editor.html">コンテンツエディタ</a>は、フォームとJSONを同じ内容で編集できるローカル専用ツールです。
+            左のナビゲーションから「基本情報」「本文」「カテゴリ」「サイト設定」「JSON」を切り替えます。
+          </p>
+          <ol class="steps">
+            <li><strong>フォームで編集する</strong><span>タイトル、概要、本文ブロック、カテゴリ、フッターなどを入力します。</span></li>
+            <li><strong>「保存してビルド」を押す</strong><span>3つのJSONが保存され、その場で <code>index.html</code> が再生成されます。</span></li>
+            <li><strong>記事を再読込する</strong><span>別タブで <code>index.html</code> を開いている場合は再読み込みしてください。</span></li>
+          </ol>
+          <h3>できること</h3>
+          <ul>
+            <li>本文セクションとブロックの追加・削除・並べ替え。</li>
+            <li>カテゴリグループと収録項目の追加・削除・並べ替え。</li>
+            <li>JSONタブで直接編集し、構文を確認してから反映。</li>
+            <li>3ファイルをZIPで書き出し、または手元のJSONを読み込んで復元。</li>
+            <li><kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>S</kbd> で保存。</li>
+          </ul>
+          <div class="callout callout--warn">
+            <strong>保存はローカルサーバー専用です。</strong>
+            <p>
+              エディタの保存機能は <code>npm run dev</code> の <code>POST /api/save</code> を使います。
+              静的ホスティング上では保存できないため、「書き出し」でZIPを取得し、<code>content/</code> に上書きしてから
+              <code>npm run build</code> を実行してください。
+            </p>
+          </div>
+          <p>
+            保存時にJSONの検証やビルドが失敗した場合、3ファイルは保存前の状態へ自動的に戻ります。
+            安心して編集できますが、大きな変更の前には「書き出し」でバックアップを取っておくと確実です。
+          </p>
+        </section>
+
+        <section id="data-structure">
+          <h2>データ構造</h2>
+          <p>編集するファイルは次の3つです。すべてUTF-8のJSONで、コメントは書けません。</p>
+          <div class="file-grid">
+            <div class="file-card">
+              <h3><code>content/site.json</code></h3>
+              <p>サイト名、パロディ表記、注意バー、ヘッダー、注目リンク、フッター、モバイルメニュー。</p>
+            </div>
+            <div class="file-card">
+              <h3><code>content/article.json</code></h3>
+              <p>記事タイトル、概要、パンくず、本文セクション、関連タグ、編集履歴、リンク語句。</p>
+            </div>
+            <div class="file-card">
+              <h3><code>content/categories.json</code></h3>
+              <p>カテゴリ一覧の見出しと、カテゴリグループ・色・説明・収録項目。</p>
+            </div>
+          </div>
+
+          <h3>article.json の主なキー</h3>
+          <table>
+            <thead><tr><th>キー</th><th>内容</th></tr></thead>
+            <tbody>
+              <tr><td><code>title</code> / <code>reading</code></td><td>記事タイトルと読み。ページタイトルにも使われます。</td></tr>
+              <tr><td><code>summary</code></td><td>タイトル下の短い説明。meta descriptionにもなります。</td></tr>
+              <tr><td><code>breadcrumb</code></td><td><code>{ label, href }</code> の配列。記事名は自動で末尾に付きます。</td></tr>
+              <tr><td><code>categories</code></td><td>記事ヘッダーに出すカテゴリ名の配列。<code>categories.json</code> のグループ名と対応させます。</td></tr>
+              <tr><td><code>hero</code></td><td>ヒーロー画像。<code>src</code>, <code>alt</code>, <code>caption</code>, <code>credit</code>, <code>creditHref</code>。</td></tr>
+              <tr><td><code>actions</code></td><td>記事ヘッダーのリンク。<code>label</code>, <code>href</code>, <code>primary</code>。</td></tr>
+              <tr><td><code>updated</code> / <code>version</code></td><td>最終更新日とバージョン表記。</td></tr>
+              <tr><td><code>linkTerms</code></td><td><code>[[語句]]</code> のリンク先をまとめたオブジェクト。</td></tr>
+              <tr><td><code>sections</code></td><td>本文セクションの配列。<code>id</code>, <code>level</code>, <code>title</code>, <code>blocks</code>。</td></tr>
+              <tr><td><code>relatedTags</code></td><td>関連タグの配列。サイドバーと検索に使われます。</td></tr>
+              <tr><td><code>history</code></td><td><code>{ date, note }</code> の配列。編集履歴ダイアログに表示。</td></tr>
+              <tr><td><code>about</code></td><td>「このサイトについて」の見出しと本文。</td></tr>
+            </tbody>
+          </table>
+          <p>
+            セクションの <code>level</code> は <code>2</code> が大見出し、<code>3</code> が小見出しです。
+            <code>id</code> は目次アンカーになるため、ファイル内で重複させないでください。
+          </p>
+
+          <h3>categories.json の構造</h3>
+          <div class="code-card">
+            <div class="code-card__bar"><span>categories.json</span><span>json</span></div>
+            <pre><code>{
+  "title": "カテゴリ一覧",
+  "description": "一覧の説明文",
+  "groups": [
+    {
+      "id": "general",
+      "name": "一般",
+      "color": "#5b7c99",
+      "description": "グループの説明",
+      "items": [
+        { "name": "C言語", "href": "#top", "current": true },
+        { "name": "未作成の項目", "soon": true }
+      ]
+    }
+  ]
+}</code></pre>
+          </div>
+          <p>
+            <code>current: true</code> を付けた項目には「この記事」バッジが付きます。
+            <code>soon: true</code> は未作成項目として、クリック時に案内を表示します。
+            <code>href</code> を省略した場合はカテゴリ一覧へのリンクになります。
+          </p>
+
+          <h3>site.json の主なキー</h3>
+          <table>
+            <thead><tr><th>キー</th><th>内容</th></tr></thead>
+            <tbody>
+              <tr><td><code>site</code></td><td>サイト名、<code>PARODY</code> バッジ、ロゴ、説明、テーマ色、言語。</td></tr>
+              <tr><td><code>notice</code></td><td>画面上部の注意バー。表示可否と保存キー。</td></tr>
+              <tr><td><code>header</code></td><td>検索欄、投稿ボタン、ログインボタンの文言とリンク。</td></tr>
+              <tr><td><code>spotlight</code></td><td>「注目」リンク。<code>query</code> を指定すると検索、<code>href</code> なら通常リンク。</td></tr>
+              <tr><td><code>footer</code></td><td>紹介文、リンク列、著作権表記、免責事項。</td></tr>
+              <tr><td><code>menu</code></td><td>モバイル用ドロワーの見出しとリンク。</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="blocks">
+          <h2>本文ブロック</h2>
+          <p>
+            <code>sections[].blocks[]</code> には、次の <code>type</code> を指定します。
+            ブロックの順番がそのまま本文の順番になります。
+          </p>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>type</th><th>主なキー</th><th>表示</th></tr></thead>
+              <tbody>
+                <tr><td><code>paragraph</code></td><td><code>text</code></td><td>段落。</td></tr>
+                <tr><td><code>list</code></td><td><code>title</code>, <code>items[]</code>, <code>ordered</code></td><td>箇条書き。<code>ordered: true</code> で番号付き。</td></tr>
+                <tr><td><code>code</code></td><td><code>language</code>, <code>filename</code>, <code>code</code></td><td>コピーボタン付きのコードブロック。</td></tr>
+                <tr><td><code>callout</code></td><td><code>tone</code>, <code>title</code>, <code>text</code></td><td>注記。<code>tone</code> は <code>info</code> / <code>warn</code> / <code>parody</code>。</td></tr>
+                <tr><td><code>tags</code></td><td><code>items[]</code></td><td>押すと検索できるタグクラウド。</td></tr>
+                <tr><td><code>figure</code></td><td><code>src</code>, <code>alt</code>, <code>caption</code>, <code>credit</code></td><td>画像とキャプション。</td></tr>
+                <tr><td><code>quote</code></td><td><code>text</code>, <code>cite</code></td><td>引用ブロック。</td></tr>
+                <tr><td><code>divider</code></td><td>なし</td><td>区切り線。</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="code-card">
+            <div class="code-card__bar"><span>article.json（抜粋）</span><span>json</span></div>
+            <pre><code>"sections": [
+  {
+    "id": "overview",
+    "level": 2,
+    "title": "概要",
+    "blocks": [
+      { "type": "paragraph", "text": "本文です。[[C++]] にも触れます。" },
+      {
+        "type": "callout",
+        "tone": "info",
+        "title": "補足",
+        "text": "ここはパロディです。"
+      }
+    ]
+  }
+]</code></pre>
+          </div>
+          <p>
+            未対応の <code>type</code> はビルド時に警告され、生成HTMLにはコメントとして残ります。
+            エディタのブロック種別セレクタを使えば、必要なキーを自動で用意できます。
+          </p>
+        </section>
+
+        <section id="inline">
+          <h2>インライン記法</h2>
+          <p>段落、リスト、注記、引用、キャプションでは、次の記法が使えます。</p>
+          <table>
+            <thead><tr><th>書き方</th><th>結果</th></tr></thead>
+            <tbody>
+              <tr><td><code>[[C++]]</code></td><td><code>linkTerms</code> のリンク先を使って「C++」をリンク。</td></tr>
+              <tr><td><code>[[C++|Cプラプラ]]</code></td><td>表示名だけ変えてリンク。</td></tr>
+              <tr><td><code>[ラベル](https://example.com)</code></td><td>通常のリンク。外部URLは新しいタブで開きます。</td></tr>
+              <tr><td><code>**強調**</code></td><td>太字。</td></tr>
+              <tr><td><code>`コード`</code></td><td>インラインコード。</td></tr>
+            </tbody>
+          </table>
+          <div class="callout callout--info">
+            <strong><code>[[語句]]</code> のリンク先</strong>
+            <p>
+              <code>article.json</code> の <code>linkTerms</code> にURLや <code>#アンカー</code> を登録します。
+              未登録の語句は平文で表示され、ビルド時に警告が出ます。
+            </p>
+          </div>
+          <p>
+            HTMLタグはエスケープされ、そのままでは埋め込まれません。コードブロック内の <code>code</code> も
+            そのまま表示されるため、インライン記法は適用されません。
+          </p>
+        </section>
+
+        <section id="images">
+          <h2>画像</h2>
+          <p>
+            画像は <code>assets/images/</code> に置き、<code>assets/images/ファイル名</code> の相対パスで参照します。
+            SVG、PNG、JPEG、WebP、GIFに対応しています。
+          </p>
+          <ul>
+            <li><code>article.hero</code> は記事上部の大きな画像です。</li>
+            <li><code>figure</code> ブロックは本文中の画像です。</li>
+            <li>ローカル画像のパスが存在しない場合、ビルドはエラーで停止します。</li>
+            <li>外部URLと <code>data:</code> URLは存在チェックの対象外です。</li>
+          </ul>
+          <p>
+            画像には内容を説明する <code>alt</code> を付け、出典がある場合は <code>credit</code> に記載してください。
+            現在のロゴと挿絵は、このパロディ用に作成したオリジナルのSVGです。
+          </p>
+        </section>
+
+        <section id="computed">
+          <h2>自動計算されるもの</h2>
+          <p>次の値は手で書かず、ビルド時にデータから計算されます。</p>
+          <ul>
+            <li><strong>節番号</strong>：<code>level: 2</code> で大番号、<code>level: 3</code> で小番号が進みます。</li>
+            <li><strong>本文ブロック数</strong>：全セクションの <code>blocks</code> の合計。</li>
+            <li><strong>カテゴリ数</strong>：<code>categories.groups</code> の数。</li>
+            <li><strong>収録項目数</strong>：各グループの <code>items</code> の延べ数。重複を除いた数も内部で計算します。</li>
+            <li><strong>関連タグ数</strong>：<code>article.relatedTags</code> の数。</li>
+            <li><strong>検索インデックス</strong>：セクション本文、カテゴリ、タグから生成。</li>
+          </ul>
+          <div class="callout callout--parody">
+            <strong>数字を直接HTMLに書かない</strong>
+            <p>
+              サイドバーの「全◯項目（延べ）」のような表示は、<code>categories.json</code> を変えれば自動で更新されます。
+              手作業で数え直す必要はありません。
+            </p>
+          </div>
+        </section>
+
+        <section id="publish">
+          <h2>公開と書き出し</h2>
+          <p>
+            生成物はルートの <code>index.html</code> です。CSS、JavaScript、画像、ガイドを含めて、
+            次のファイルを静的ホスティングにアップロードすれば公開できます。
+          </p>
+          <div class="code-card">
+            <div class="code-card__bar"><span>公開するファイル</span><span>text</span></div>
+            <pre><code>index.html
+guide.html
+editor.html
+assets/
+content/</code></pre>
+          </div>
+          <p>
+            <code>content/</code> はエディタが読み込むために必要です。エディタを公開しない場合は省略できますが、
+            その場合でも再ビルド用にリポジトリ側で保管してください。
+          </p>
+          <h3>静的ホスティングで更新する流れ</h3>
+          <ol class="steps">
+            <li><strong>エディタで編集する</strong><span>「書き出し」を押し、<code>pixpedia-content.zip</code> を取得します。</span></li>
+            <li><strong>JSONを上書きする</strong><span>ZIP内の3ファイルを <code>content/</code> に置きます。</span></li>
+            <li><strong>ビルドする</strong><span><code>npm run build</code> で <code>index.html</code> を再生成します。</span></li>
+            <li><strong>アップロードする</strong><span>変更したファイルをホスティングへ転送します。</span></li>
+          </ol>
+        </section>
+
+        <section id="notes">
+          <h2>注意事項</h2>
+          <ul>
+            <li><code>index.html</code> は生成物です。直接編集しても次のビルドで上書きされます。</li>
+            <li>JSONの構文エラーや必須項目の不足は、ビルド時に日本語のエラーとして表示されます。</li>
+            <li>セクションIDとカテゴリIDは重複させないでください。</li>
+            <li>大きな変更の前には、エディタの「書き出し」でバックアップを取ってください。</li>
+            <li>このサイトは「ピクシブ百科事典」の外観を参考にした非公式パロディです。実在の記事・画像・ロゴとは関係ありません。</li>
+            <li>検索避けのため、全HTMLページに <code>noindex</code> を指定し、<code>robots.txt</code> でクロールを拒否しています。GitHub Pages は公開状態のままなので、アクセス制限ではありません。</li>
+          </ul>
+          <div class="guide-next">
+            <div>
+              <p class="eyebrow">READY TO EDIT?</p>
+              <h3>データを変えて、記事を育てる。</h3>
+              <p>編集を始めるならエディタへ。JSONを直接触る場合は <code>content/</code> を開いてください。</p>
+            </div>
+            <div class="guide-next__actions">
+              <a class="button button--blue" href="editor.html">エディタを開く</a>
+              <a class="button button--soft" href="index.html">記事を見る</a>
+            </div>
+          </div>
+        </section>
+      </article>
+    </div>
+  </main>
+
+  <footer class="guide-footer">
+    <div class="guide-footer__inner">
+      <p>うちのこ百科事典 — 非公式のC言語百科事典</p>
+      <nav aria-label="フッターリンク">
+        <a href="index.html">記事</a>
+        <a href="editor.html">エディタ</a>
+        <a href="#guide-main">ページ先頭</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

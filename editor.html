@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>コンテンツエディタ | うちのこ百科事典</title>
+  <meta name="robots" content="noindex, nofollow, noarchive, noimageindex">
+  <meta name="theme-color" content="#314e6f">
+  <link rel="icon" href="assets/images/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/editor.css">
+</head>
+<body class="editor-page">
+  <header class="editor-topbar">
+    <div class="editor-topbar__inner">
+      <a class="editor-brand" href="index.html">
+        <img src="assets/images/mark.svg" alt="" width="30" height="30">
+        <span class="editor-brand__name">うちのこ百科事典<em>PARODY</em></span>
+      </a>
+      <span class="editor-topbar__divider" aria-hidden="true"></span>
+      <span class="editor-topbar__title">コンテンツエディタ</span>
+      <span class="editor-status" id="editor-status" data-state="loading" role="status">
+        <span class="editor-status__dot" aria-hidden="true"></span>
+        <span id="editor-status-text">読み込み中…</span>
+      </span>
+      <div class="editor-topbar__actions">
+        <a class="button button--ghost" href="index.html" target="_blank" rel="noopener">サイトを見る <span aria-hidden="true">↗</span></a>
+        <button type="button" class="button button--soft" data-action="reload">再読込</button>
+        <button type="button" class="button button--soft" data-action="download-all">書き出し</button>
+        <button type="button" class="button button--blue" data-action="save" id="save-button">保存してビルド</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="editor-layout">
+    <aside class="editor-sidebar">
+      <nav class="editor-nav" aria-label="編集する内容">
+        <button type="button" class="editor-nav__item is-active" data-panel-target="basic">
+          <span>基本情報</span><span class="editor-nav__count" data-count="sections">–</span>
+        </button>
+        <button type="button" class="editor-nav__item" data-panel-target="body">
+          <span>本文</span><span class="editor-nav__count" data-count="blocks">–</span>
+        </button>
+        <button type="button" class="editor-nav__item" data-panel-target="categories">
+          <span>カテゴリ</span><span class="editor-nav__count" data-count="items">–</span>
+        </button>
+        <button type="button" class="editor-nav__item" data-panel-target="site">
+          <span>サイト設定</span>
+        </button>
+        <button type="button" class="editor-nav__item" data-panel-target="json">
+          <span>JSON</span>
+        </button>
+      </nav>
+
+      <section class="editor-stats" aria-labelledby="stats-title">
+        <h2 id="stats-title">現在の構成</h2>
+        <dl>
+          <div><dt>セクション</dt><dd id="stat-sections">–</dd></div>
+          <div><dt>本文ブロック</dt><dd id="stat-blocks">–</dd></div>
+          <div><dt>カテゴリ</dt><dd id="stat-categories">–</dd></div>
+          <div><dt>収録項目</dt><dd id="stat-items">–</dd></div>
+          <div><dt>関連タグ</dt><dd id="stat-tags">–</dd></div>
+        </dl>
+        <p>項目数・節番号・検索インデックスはビルド時に自動計算されます。</p>
+      </section>
+
+      <section class="editor-help">
+        <h2>使い方</h2>
+        <ol>
+          <li><code>npm run dev</code> で起動</li>
+          <li>フォームを編集</li>
+          <li>「保存してビルド」を押す</li>
+          <li><a href="index.html" target="_blank" rel="noopener">サイト</a>を再読込</li>
+        </ol>
+        <p>JSONを直接編集したい場合は「JSON」タブへ。書き出したファイルは <code>content/</code> に上書きしてください。</p>
+      </section>
+    </aside>
+
+    <main class="editor-main" id="editor-app" hidden>
+      <!-- ============================== BASIC ============================== -->
+      <section class="editor-panel is-active" data-panel="basic" aria-labelledby="panel-basic-title">
+        <header class="panel-head">
+          <p class="panel-head__eyebrow">content/article.json</p>
+          <h1 id="panel-basic-title">基本情報</h1>
+          <p>記事タイトル、概要、ヒーロー画像、パンくず、リンク語句などを編集します。</p>
+        </header>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>タイトルと概要</h2>
+            <span class="file-tag">article.json</span>
+          </header>
+          <div class="field-grid">
+            <label class="field">
+              <span class="field__label">記事タイトル <b>必須</b></span>
+              <input type="text" data-path="article.title" placeholder="C言語">
+            </label>
+            <label class="field">
+              <span class="field__label">読み仮名</span>
+              <input type="text" data-path="article.reading" placeholder="しーげんご">
+            </label>
+            <label class="field field--full">
+              <span class="field__label">概要文</span>
+              <textarea rows="3" data-path="article.summary" placeholder="記事の冒頭に表示される短い説明"></textarea>
+              <span class="field__hint">インライン記法（<code>[[語句]]</code> / <code>**強調**</code> / <code>`コード`</code>）が使えます。</span>
+            </label>
+            <label class="field">
+              <span class="field__label">最終更新日</span>
+              <input type="date" data-path="article.updated">
+            </label>
+            <label class="field">
+              <span class="field__label">バージョン表記</span>
+              <input type="text" data-path="article.version" placeholder="parody-1.0">
+            </label>
+            <label class="field field--full">
+              <span class="field__label">この記事のカテゴリ</span>
+              <input type="text" data-path="article.categories" data-transform="csv" placeholder="一般, プログラミング言語, 文化・その他">
+              <span class="field__hint">カンマまたは読点区切り。categories.json のグループ名と一致させてください。</span>
+            </label>
+          </div>
+        </article>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>ヒーロー画像</h2>
+            <span class="file-tag">article.json / hero</span>
+          </header>
+          <div class="field-grid">
+            <label class="field field--full">
+              <span class="field__label">画像パス</span>
+              <input type="text" data-path="article.hero.src" placeholder="assets/images/c-language.svg">
+              <span class="field__hint">リポジトリ内のパス、または https:// で始まるURL。</span>
+            </label>
+            <label class="field field--full">
+              <span class="field__label">代替テキスト</span>
+              <input type="text" data-path="article.hero.alt" placeholder="画像の内容を説明する文">
+            </label>
+            <label class="field">
+              <span class="field__label">キャプション</span>
+              <input type="text" data-path="article.hero.caption">
+            </label>
+            <label class="field">
+              <span class="field__label">クレジット</span>
+              <input type="text" data-path="article.hero.credit">
+            </label>
+            <label class="field">
+              <span class="field__label">クレジットのリンク先</span>
+              <input type="text" data-path="article.hero.creditHref" placeholder="#about">
+            </label>
+            <div class="field field--preview">
+              <span class="field__label">プレビュー</span>
+              <div class="hero-preview" id="hero-preview">
+                <img alt="" width="120" height="120">
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>このサイトについて</h2>
+            <span class="file-tag">article.json / about</span>
+          </header>
+          <div class="field-grid">
+            <label class="field">
+              <span class="field__label">見出し</span>
+              <input type="text" data-path="article.about.title">
+            </label>
+            <label class="field field--full">
+              <span class="field__label">本文</span>
+              <textarea rows="4" data-path="article.about.text"></textarea>
+            </label>
+          </div>
+        </article>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>パンくずリスト</h2>
+            <button type="button" class="editor-mini-button" data-add="breadcrumb">＋ 追加</button>
+          </header>
+          <p class="editor-card__note">記事名は自動で末尾に付きます。ここには上位階層だけを並べます。</p>
+          <div class="repeat-list" id="breadcrumb-rows"></div>
+        </article>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>記事ヘッダーのリンク</h2>
+            <button type="button" class="editor-mini-button" data-add="action">＋ 追加</button>
+          </header>
+          <p class="editor-card__note">タイトル下に縦に並ぶリンクです。<code>primary</code> を付けたものが太字になります。</p>
+          <div class="repeat-list" id="action-rows"></div>
+        </article>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>本文のリンク語句</h2>
+            <button type="button" class="editor-mini-button" data-add="linkterm">＋ 追加</button>
+          </header>
+          <p class="editor-card__note">本文中の <code>[[語句]]</code> を、ここに登録したURLへリンクします。語句は完全一致です。</p>
+          <div class="repeat-list repeat-list--linkterms" id="linkterm-rows"></div>
+        </article>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>編集履歴</h2>
+            <button type="button" class="editor-mini-button" data-add="history">＋ 追加</button>
+          </header>
+          <p class="editor-card__note">記事の「編集履歴」ダイアログに表示されます。新しい順に並べてください。</p>
+          <div class="repeat-list" id="history-rows"></div>
+        </article>
+      </section>
+
+      <!-- ============================== BODY =============================== -->
+      <section class="editor-panel" data-panel="body" aria-labelledby="panel-body-title">
+        <header class="panel-head">
+          <p class="panel-head__eyebrow">content/article.json / sections</p>
+          <h1 id="panel-body-title">本文</h1>
+          <p>節を追加・並べ替え・削除し、それぞれのブロックを編集します。節番号はビルド時に自動で振られます。</p>
+        </header>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>関連タグ</h2>
+            <span class="file-tag">article.json / relatedTags</span>
+          </header>
+          <div class="field-grid">
+            <label class="field field--full">
+              <span class="field__label">タグ一覧</span>
+              <input type="text" data-path="article.relatedTags" data-transform="csv" placeholder="プログラミング言語, ポインタ, 未定義動作">
+              <span class="field__hint">カンマまたは読点区切り。サイドバーのタグ数と検索インデックスに使われます。</span>
+            </label>
+          </div>
+        </article>
+
+        <div class="section-toolbar">
+          <p><strong id="section-count-label">–</strong> 個の節</p>
+          <button type="button" class="button button--blue" data-add-section>＋ 節を追加</button>
+        </div>
+
+        <div id="sections"></div>
+      </section>
+
+      <!-- ============================ CATEGORIES =========================== -->
+      <section class="editor-panel" data-panel="categories" aria-labelledby="panel-categories-title">
+        <header class="panel-head">
+          <p class="panel-head__eyebrow">content/categories.json</p>
+          <h1 id="panel-categories-title">カテゴリ</h1>
+          <p>記事末尾のカテゴリ一覧と、サイドバーのカテゴリカードを編集します。項目数は自動計算されます。</p>
+        </header>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>セクション見出し</h2>
+            <span class="file-tag">categories.json</span>
+          </header>
+          <div class="field-grid">
+            <label class="field">
+              <span class="field__label">見出し</span>
+              <input type="text" data-path="categories.title">
+            </label>
+            <label class="field field--full">
+              <span class="field__label">説明文</span>
+              <textarea rows="2" data-path="categories.description"></textarea>
+            </label>
+          </div>
+        </article>
+
+        <div class="section-toolbar">
+          <p><strong id="category-count-label">–</strong> 個のカテゴリ</p>
+          <button type="button" class="button button--blue" data-add-group>＋ カテゴリを追加</button>
+        </div>
+
+        <div id="category-groups"></div>
+      </section>
+
+      <!-- ============================== SITE =============================== -->
+      <section class="editor-panel" data-panel="site" aria-labelledby="panel-site-title">
+        <header class="panel-head">
+          <p class="panel-head__eyebrow">content/site.json</p>
+          <h1 id="panel-site-title">サイト設定</h1>
+          <p>ヘッダー、注意バー、注目リンク、フッター、モバイルメニューを編集します。</p>
+        </header>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>サイトの基本情報</h2>
+            <span class="file-tag">site.json / site</span>
+          </header>
+          <div class="field-grid">
+            <label class="field">
+              <span class="field__label">サイト名</span>
+              <input type="text" data-path="site.site.name">
+            </label>
+            <label class="field">
+              <span class="field__label">バッジ</span>
+              <input type="text" data-path="site.site.badge" placeholder="PARODY">
+            </label>
+            <label class="field">
+              <span class="field__label">ロゴ画像</span>
+              <input type="text" data-path="site.site.mark">
+            </label>
+            <label class="field">
+              <span class="field__label">テーマカラー</span>
+              <input type="text" data-path="site.site.themeColor" placeholder="#314e6f">
+            </label>
+            <label class="field">
+              <span class="field__label">言語</span>
+              <input type="text" data-path="site.site.lang" placeholder="ja">
+            </label>
+            <label class="field field--full">
+              <span class="field__label">タグライン</span>
+              <input type="text" data-path="site.site.tagline">
+            </label>
+            <label class="field field--full">
+              <span class="field__label">サイト説明（meta description）</span>
+              <textarea rows="2" data-path="site.site.description"></textarea>
+            </label>
+          </div>
+        </article>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>上部の注意バー</h2>
+            <span class="file-tag">site.json / notice</span>
+          </header>
+          <div class="field-grid">
+            <label class="field field--check">
+              <input type="checkbox" data-path="site.notice.enabled">
+              <span>注意バーを表示する</span>
+            </label>
+            <label class="field">
+              <span class="field__label">閉じるボタン</span>
+              <input type="text" data-path="site.notice.button">
+            </label>
+            <label class="field field--full">
+              <span class="field__label">本文</span>
+              <textarea rows="2" data-path="site.notice.text"></textarea>
+            </label>
+            <label class="field">
+              <span class="field__label">保存キー（localStorage）</span>
+              <input type="text" data-path="site.notice.storageKey">
+            </label>
+          </div>
+        </article>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>ヘッダー</h2>
+            <span class="file-tag">site.json / header</span>
+          </header>
+          <div class="field-grid">
+            <label class="field">
+              <span class="field__label">検索プレースホルダー</span>
+              <input type="text" data-path="site.header.searchPlaceholder">
+            </label>
+            <label class="field">
+              <span class="field__label">検索ラベル（読み上げ用）</span>
+              <input type="text" data-path="site.header.searchLabel">
+            </label>
+            <label class="field">
+              <span class="field__label">投稿ボタン</span>
+              <input type="text" data-path="site.header.submitLabel">
+            </label>
+            <label class="field">
+              <span class="field__label">投稿ボタンのリンク先</span>
+              <input type="text" data-path="site.header.submitHref">
+            </label>
+            <label class="field">
+              <span class="field__label">ログインボタン</span>
+              <input type="text" data-path="site.header.loginLabel">
+            </label>
+            <label class="field">
+              <span class="field__label">メニューラベル</span>
+              <input type="text" data-path="site.header.menuLabel">
+            </label>
+            <label class="field field--full">
+              <span class="field__label">ログイン時のメッセージ</span>
+              <input type="text" data-path="site.header.loginMessage">
+            </label>
+          </div>
+        </article>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>注目リンク</h2>
+            <button type="button" class="editor-mini-button" data-add="spotlight">＋ 追加</button>
+          </header>
+          <p class="editor-card__note"><code>query</code> を入れると検索、<code>href</code> を入れるとページ内リンクになります。</p>
+          <div class="field-grid field-grid--single">
+            <label class="field">
+              <span class="field__label">見出しラベル</span>
+              <input type="text" data-path="site.spotlight.label" placeholder="注目">
+            </label>
+          </div>
+          <div class="repeat-list repeat-list--spotlight" id="spotlight-rows"></div>
+        </article>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>フッター</h2>
+            <button type="button" class="editor-mini-button" data-add="footer-column">＋ 列を追加</button>
+          </header>
+          <div class="field-grid">
+            <label class="field field--full">
+              <span class="field__label">紹介文</span>
+              <textarea rows="2" data-path="site.footer.blurb"></textarea>
+            </label>
+            <label class="field field--full">
+              <span class="field__label">免責事項</span>
+              <textarea rows="2" data-path="site.footer.disclaimer"></textarea>
+            </label>
+            <label class="field field--full">
+              <span class="field__label">コピーライト</span>
+              <input type="text" data-path="site.footer.copyright">
+            </label>
+          </div>
+          <div id="footer-columns" class="nested-list"></div>
+        </article>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>モバイルメニュー</h2>
+            <button type="button" class="editor-mini-button" data-add="menu-section">＋ セクションを追加</button>
+          </header>
+          <div class="field-grid field-grid--single">
+            <label class="field">
+              <span class="field__label">メニュータイトル</span>
+              <input type="text" data-path="site.menu.title">
+            </label>
+          </div>
+          <div id="menu-sections" class="nested-list"></div>
+        </article>
+      </section>
+
+      <!-- ============================== JSON =============================== -->
+      <section class="editor-panel" data-panel="json" aria-labelledby="panel-json-title">
+        <header class="panel-head">
+          <p class="panel-head__eyebrow">raw JSON</p>
+          <h1 id="panel-json-title">JSON</h1>
+          <p>3つのJSONを直接確認・編集できます。反映したあと「保存してビルド」を押してください。</p>
+        </header>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>JSONエディタ</h2>
+            <span class="file-tag" id="json-file-tag">site.json</span>
+          </header>
+          <div class="json-toolbar">
+            <label class="field field--inline">
+              <span class="field__label">ファイル</span>
+              <select id="json-file">
+                <option value="site">content/site.json</option>
+                <option value="article">content/article.json</option>
+                <option value="categories">content/categories.json</option>
+              </select>
+            </label>
+            <button type="button" class="button button--soft" data-json-action="format">整形</button>
+            <button type="button" class="button button--soft" data-json-action="apply">エディタに反映</button>
+            <button type="button" class="button button--soft" data-json-action="download">このファイルを書き出す</button>
+          </div>
+          <label class="field field--full">
+            <span class="sr-only">JSON本文</span>
+            <textarea id="json-area" class="json-area" rows="26" spellcheck="false"></textarea>
+          </label>
+          <p class="field__hint">「エディタに反映」は構文チェックだけ行い、保存はしません。保存前に内容を確認してください。</p>
+        </article>
+
+        <article class="editor-card">
+          <header class="editor-card__head">
+            <h2>ファイルから読み込む</h2>
+          </header>
+          <p class="editor-card__note">
+            <code>content/</code> のJSONを選択するとエディタに読み込みます。3ファイルをまとめて選択できます。
+          </p>
+          <label class="file-drop">
+            <input type="file" id="import-files" accept="application/json,.json" multiple>
+            <span class="file-drop__icon" aria-hidden="true">⇩</span>
+            <span class="file-drop__text">site.json / article.json / categories.json を選択</span>
+          </label>
+        </article>
+
+        <article class="editor-card editor-card--warning">
+          <h2>静的ホスティングの場合</h2>
+          <p>
+            このエディタの保存機能はローカルサーバー（<code>npm run dev</code>）専用です。
+            静的ホスティングでは「書き出し」でJSONをダウンロードし、リポジトリの <code>content/</code> に上書きしてから
+            <code>npm run build</code> を実行してください。
+          </p>
+        </article>
+      </section>
+    </main>
+
+    <section class="editor-loading" id="editor-loading" aria-live="polite">
+      <span class="editor-loading__spinner" aria-hidden="true"></span>
+      <p>コンテンツを読み込んでいます…</p>
+    </section>
+
+    <section class="editor-error" id="editor-error" hidden aria-live="assertive">
+      <p class="editor-error__code">CONTENT NOT LOADED</p>
+      <h1>JSONを読み込めませんでした</h1>
+      <p id="editor-error-message"></p>
+      <div class="editor-error__actions">
+        <button type="button" class="button button--blue" data-action="retry">もう一度読み込む</button>
+        <a class="button button--soft" href="guide.html">編集ガイド</a>
+      </div>
+      <div class="editor-error__import">
+        <p><strong>ファイルから読み込む</strong></p>
+        <label class="file-drop">
+          <input type="file" id="import-files-error" accept="application/json,.json" multiple>
+          <span class="file-drop__icon" aria-hidden="true">⇩</span>
+          <span class="file-drop__text">site.json / article.json / categories.json を選択</span>
+        </label>
+      </div>
+      <pre class="editor-error__hint"><code>npm run dev
+# → http://localhost:4173/editor.html</code></pre>
+    </section>
+  </div>
+
+  <div class="editor-toast" id="editor-toast" role="status" aria-live="polite"></div>
+  <div class="editor-savebar" id="editor-savebar" hidden>
+    <span id="editor-savebar-text">未保存の変更があります</span>
+    <button type="button" class="button button--blue" data-action="save">保存してビルド</button>
+  </div>
+
+  <script src="assets/js/editor.js" defer></script>
+</body>
+</html>
