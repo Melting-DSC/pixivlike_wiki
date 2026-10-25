@@ -2,9 +2,8 @@
    Content store.
 
    Loads the default content from content/*.json, overlays a copy saved in
-   localStorage, and validates the result. Uploaded images are kept only in
-   memory: when the state is persisted, data: URLs are replaced with an empty
-   string so the editor asks for the image again on the next visit.
+   localStorage, and validates the result. Uploaded images (data: URLs) are
+   stored separately in IndexedDB; see "Uploaded images" below.
 
    No dependencies. Exposes `window.WikiStore`.
    ========================================================================== */
@@ -71,51 +70,195 @@
     const defaults = await fetchDefaults();
     const saved = readSaved();
     if (!saved) return defaults;
-    return {
+    const state = {
       site: deepMerge(defaults.site, saved.site || {}),
       article: deepMerge(defaults.article, saved.article || {}),
     };
+    await restoreImages(state);
+    return state;
   }
 
   function isDataUrl(value) {
     return typeof value === "string" && value.trim().startsWith("data:");
   }
 
-  function stripAssets(state) {
-    const article = clone(state.article || {});
-    if (article.hero && isDataUrl(article.hero.src)) article.hero.src = "";
+  /* ------------------------------------------------------------------ *
+   * Uploaded images
+   *
+   * localStorage is too small for images, so uploaded images (data: URLs)
+   * are kept in IndexedDB. The localStorage copy holds `local-image:<key>`
+   * in their place, and load() swaps the image back in. Without IndexedDB
+   * the reference is an empty string and the editor asks for the image
+   * again on the next visit.
+   * ------------------------------------------------------------------ */
+
+  const IMAGE_DB = "uchinoko-wiki:images";
+  const IMAGE_STORE = "images";
+  const IMAGE_REF = "local-image:";
+  let imageDBPromise = null;
+  let canStoreImages = typeof window.indexedDB !== "undefined";
+  let imageQueue = Promise.resolve();
+  const storedImageKeys = new Set();
+  const imageKeyCache = new Map();
+
+  const isImageRef = (value) => typeof value === "string" && value.startsWith(IMAGE_REF);
+
+  function requestResult(request) {
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  function transactionDone(transaction) {
+    return new Promise((resolve, reject) => {
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+      transaction.onabort = () => reject(transaction.error || new Error("画像の保存が中断されました。"));
+    });
+  }
+
+  function openImageDB() {
+    if (!canStoreImages) return Promise.resolve(null);
+    imageDBPromise ??= new Promise((resolve) => {
+      try {
+        const request = window.indexedDB.open(IMAGE_DB, 1);
+        request.onupgradeneeded = () => request.result.createObjectStore(IMAGE_STORE);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => {
+          canStoreImages = false;
+          resolve(null);
+        };
+      } catch {
+        canStoreImages = false;
+        resolve(null);
+      }
+    });
+    return imageDBPromise;
+  }
+
+  // Content-based key, so the same image is stored once and keeps its key
+  // when blocks are reordered.
+  function imageKey(dataUrl) {
+    const cached = imageKeyCache.get(dataUrl);
+    if (cached) return cached;
+    let a = 0x811c9dc5;
+    let b = 5381;
+    for (let index = 0; index < dataUrl.length; index += 1) {
+      const code = dataUrl.charCodeAt(index);
+      a = Math.imul(a ^ code, 0x01000193);
+      b = (Math.imul(b, 33) + code) | 0;
+    }
+    const key = `img-${(a >>> 0).toString(36)}${(b >>> 0).toString(36)}-${dataUrl.length.toString(36)}`;
+    imageKeyCache.set(dataUrl, key);
+    return key;
+  }
+
+  // Every place in the article that can hold an uploaded image.
+  function imageHolders(article) {
+    const holders = [];
+    if (article.hero) holders.push(article.hero);
     for (const section of article.sections || []) {
       for (const block of section.blocks || []) {
-        if (block.type === "figure" && isDataUrl(block.src)) block.src = "";
+        if (block.type === "figure") holders.push(block);
+      }
+    }
+    return holders;
+  }
+
+  async function restoreImages(state) {
+    const holders = imageHolders(state.article || {}).filter((holder) => isImageRef(holder.src));
+    if (!holders.length) return;
+    const db = await openImageDB();
+    const store = db?.transaction(IMAGE_STORE, "readonly").objectStore(IMAGE_STORE);
+    await Promise.all(
+      holders.map(async (holder) => {
+        const key = holder.src.slice(IMAGE_REF.length);
+        let dataUrl = "";
+        try {
+          dataUrl = store ? (await requestResult(store.get(key))) || "" : "";
+        } catch {
+          dataUrl = "";
+        }
+        holder.src = dataUrl;
+        if (dataUrl) {
+          imageKeyCache.set(dataUrl, key);
+          storedImageKeys.add(key);
+        }
+      }),
+    );
+  }
+
+  // Writes new images and deletes ones the article no longer uses.
+  async function writeImages(images) {
+    const db = await openImageDB();
+    if (!db) return { ok: false, error: new Error("このブラウザでは画像を保存できません。") };
+    const transaction = db.transaction(IMAGE_STORE, "readwrite");
+    const store = transaction.objectStore(IMAGE_STORE);
+    for (const [key, dataUrl] of images) {
+      if (!storedImageKeys.has(key)) store.put(dataUrl, key);
+    }
+    const existing = await requestResult(store.getAllKeys());
+    for (const key of existing) {
+      if (!images.has(key)) store.delete(key);
+    }
+    await transactionDone(transaction);
+    storedImageKeys.clear();
+    for (const key of images.keys()) storedImageKeys.add(key);
+    return { ok: true };
+  }
+
+  function persistImages(images) {
+    const run = () => writeImages(images).catch((error) => ({ ok: false, error }));
+    imageQueue = imageQueue.then(run, run);
+    return imageQueue;
+  }
+
+  function stripAssets(state) {
+    const article = clone(state.article || {});
+    const images = new Map();
+    for (const holder of imageHolders(article)) {
+      if (!isDataUrl(holder.src)) continue;
+      if (canStoreImages) {
+        const dataUrl = holder.src.trim();
+        const key = imageKey(dataUrl);
+        images.set(key, dataUrl);
+        holder.src = `${IMAGE_REF}${key}`;
+      } else {
+        holder.src = "";
       }
     }
     return {
-      site: clone(state.site || {}),
-      article,
+      payload: {
+        site: clone(state.site || {}),
+        article,
+      },
+      images,
     };
   }
 
   function countUploadedAssets(state) {
-    const article = state.article || {};
-    let count = 0;
-    if (isDataUrl(article.hero?.src)) count += 1;
-    for (const section of article.sections || []) {
-      for (const block of section.blocks || []) {
-        if (block.type === "figure" && isDataUrl(block.src)) count += 1;
-      }
-    }
-    return count;
+    return imageHolders(state.article || {}).filter((holder) => isDataUrl(holder.src)).length;
+  }
+
+  // Uploaded images that will be lost on the next visit.
+  function countUnsavedImages(state) {
+    return canStoreImages ? 0 : countUploadedAssets(state);
   }
 
   function save(state) {
-    const payload = stripAssets(state);
+    const { payload, images } = stripAssets(state);
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
       window.localStorage.setItem(SAVED_AT_KEY, new Date().toISOString());
-      return { ok: true, savedAt: savedAt() };
     } catch (error) {
       return { ok: false, error };
     }
+    return {
+      ok: true,
+      savedAt: savedAt(),
+      images: canStoreImages ? persistImages(images) : Promise.resolve({ ok: true }),
+    };
   }
 
   function clear() {
@@ -125,6 +268,7 @@
     } catch {
       /* localStorage may be unavailable */
     }
+    if (canStoreImages) persistImages(new Map());
   }
 
   function validate(state) {
@@ -184,6 +328,7 @@
     readSaved,
     stripAssets,
     countUploadedAssets,
+    countUnsavedImages,
     validate,
     isDataUrl,
     deepMerge,

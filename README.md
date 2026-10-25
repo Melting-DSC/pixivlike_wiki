@@ -96,15 +96,17 @@ PORT=8080 npm run dev
 | `uchinoko-wiki:content:v1` | `{ site, article }` をまとめた編集内容 |
 | `uchinoko-wiki:content:v1:savedAt` | 最終保存日時（ISO 8601） |
 
-- 保存は `WikiStore.save()` が行い、画像の `data:` URL は保存前に空文字へ置換します。
+- 保存は `WikiStore.save()` が行い、画像の `data:` URL は IndexedDB に保存して、localStorage 側は `local-image:<key>` という参照に置き換えます（下の「画像の扱い」）。
 - 保存に失敗した場合（容量不足など）は編集モードにエラーを表示します。JSONの書き出しを促してください。
-- 初期データに戻すと、この2つのキーを削除して `content/*.json` を読み直します。
+- 初期データに戻すと、この2つのキーと IndexedDB の画像を削除して `content/*.json` を読み直します。
 - 記事のブックマークや注意バーの閉じ状態は別キーです（`pixpedia-parody-*`）。
 
 ### 画像の扱い
 
 - 編集モードの画像アップロードは `FileReader` で data URL にし、その場で記事へ表示します。
-- `localStorage` には画像を保存しません。再訪時は空文字になり、編集モードで再選択を促します。
+- アップロード画像は IndexedDB（DB名 `uchinoko-wiki:images`、ストア `images`）に、data URL の内容から作ったキーで保存します。localStorage の編集内容には `local-image:<key>` が入り、`WikiStore.load()` が読み込み時に data URL へ戻します。
+- 使われなくなった画像は保存のたびに IndexedDB から削除します。
+- IndexedDB が使えない環境では従来どおり空文字で保存し、再訪時に再選択を促します。
 - `article.hero.src` と `figure` ブロックの `src` が対象です。
 - 画像パスに `assets/images/...` や `https://...` を直接指定した場合は、その参照を保存します。
 - HTML / PNG / PDF の書き出し時は、画像を data URL に変換して埋め込みます。CORS で取得できない外部画像は絶対URLのまま残ります。
@@ -268,7 +270,7 @@ GitHub Pages などの静的ホスティングでは、保存は各閲覧者の�
 
 - **記事が表示されない**: `file://` ではなく `npm run dev` か静的ホスティング経由で開いてください。
 - **編集内容が消えた**: ブラウザのサイトデータ消去、シークレットウィンドウ、別ブラウザでは保存が共有されません。JSONから復元してください。
-- **画像が消えた**: アップロード画像は保存されません。編集モードで再選択するか、固定パスを指定してください。
+- **画像が消えた**: アップロード画像はこのブラウザの IndexedDB に保存されます。サイトデータを消去した場合や IndexedDB が使えない環境では消えるため、編集モードで再選択するか、JSONから復元してください。
 - **書き出しに失敗する**: 外部画像のCORS、canvasのサイズ上限、メモリ不足が原因になることがあります。JSONでバックアップしてください。
 - **検証で失敗する**: エラーメッセージのファイル名・キーを確認してください。必須項目、IDの重複、画像パスが主な原因です。
 - **旧エディタを開いた**: `editor.html` は `index.html#editor` へ転送します。

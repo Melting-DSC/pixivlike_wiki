@@ -3,8 +3,8 @@
 
    The editor lives in index.html and opens as a full-screen overlay, so
    moving between the article and the editor never reloads the page. Changes
-   are saved to localStorage automatically. Uploaded images stay in memory
-   only; the store replaces their data: URLs with an empty string.
+   are saved to localStorage automatically; uploaded images are saved to
+   IndexedDB by the store.
    ========================================================================== */
 
 (() => {
@@ -133,16 +133,29 @@
       return false;
     }
     dirty = false;
-    const uploaded = WindowStoreSafe.countUploadedAssets(state);
-    setStatus("saved", uploaded ? "保存済み（画像は再選択）" : "このブラウザに保存済み");
-    if (statusEl) {
-      statusEl.title = uploaded
-        ? "アップロードした画像は保存されません。再訪時に選び直してください。"
-        : "編集内容はこのブラウザに保存されています。";
-    }
+    showSavedStatus();
     updateSavebar();
     if (!silent) showToast("このブラウザに保存しました。", "success");
+    result.images?.then((images) => {
+      if (images.ok) return;
+      setStatus("error", "画像を保存できませんでした");
+      showToast(
+        `画像をこのブラウザに保存できませんでした（${images.error?.message || "容量不足の可能性"}）。JSONで書き出して保管してください。`,
+        "error",
+        8000,
+      );
+    });
     return true;
+  }
+
+  function showSavedStatus() {
+    const unsaved = WindowStoreSafe.countUnsavedImages(state);
+    setStatus("saved", unsaved ? "保存済み（画像は再選択）" : "このブラウザに保存済み");
+    if (statusEl) {
+      statusEl.title = unsaved
+        ? "このブラウザでは画像を保存できません。再訪時に選び直してください。"
+        : "編集内容と画像はこのブラウザに保存されています。";
+    }
   }
 
   function markDirty() {
@@ -157,7 +170,7 @@
   const WindowStoreSafe = {
     save: (value) => window.WikiStore.save(value),
     fetchDefaults: () => window.WikiStore.fetchDefaults(),
-    countUploadedAssets: (value) => window.WikiStore.countUploadedAssets(value),
+    countUnsavedImages: (value) => window.WikiStore.countUnsavedImages(value),
   };
 
   function selected(value, current) {
@@ -203,7 +216,7 @@
     renderAll();
     setPanel(activePanel, false);
     dirty = false;
-    setStatus("saved", WindowStoreSafe.countUploadedAssets(state) ? "保存済み（画像は再選択）" : "このブラウザに保存済み");
+    showSavedStatus();
     updateSavebar();
   }
 
@@ -589,7 +602,13 @@
 
       if (path.startsWith("article.hero.")) fillStaticFields();
       markDirty();
-      showToast("画像を設定しました。この画像はブラウザに保存されません。", "info", 5200);
+      showToast(
+        WindowStoreSafe.countUnsavedImages(state)
+          ? "画像を設定しました。このブラウザでは画像を保存できないため、再訪時に選び直してください。"
+          : "画像を設定しました。",
+        "info",
+        5200,
+      );
     } catch (error) {
       showToast(`画像を読み込めませんでした（${error.message}）。`, "error", 6000);
     } finally {
@@ -640,7 +659,7 @@
       showToast(`${label} の書き出しに失敗しました（${error.message}）。`, "error", 8000);
     } finally {
       for (const button of buttons) button.disabled = false;
-      setStatus("saved", WindowStoreSafe.countUploadedAssets(state) ? "保存済み（画像は再選択）" : "このブラウザに保存済み");
+      showSavedStatus();
     }
   }
 
@@ -761,7 +780,7 @@
       fillStaticFields();
       renderAll();
       dirty = false;
-      setStatus("saved", WindowStoreSafe.countUploadedAssets(state) ? "保存済み（画像は再選択）" : "このブラウザに保存済み");
+      showSavedStatus();
       updateSavebar();
     } else {
       loading.hidden = true;
