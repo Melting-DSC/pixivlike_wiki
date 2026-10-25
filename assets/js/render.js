@@ -307,7 +307,7 @@ ${blocks}
     return `<header class="site-header" id="site-header">
     <div class="site-header__inner">
       <div class="site-header__left">
-        <button type="button" class="icon-button menu-open" tabindex="-1" aria-hidden="true">
+        <button type="button" class="icon-button menu-open" aria-label="メニューを開く" aria-expanded="false" aria-controls="site-menu" data-menu-toggle>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
         <a class="brand" href="#top" aria-label="${attr(`${site.site?.name || "百科事典"}（パロディ）`)}">
@@ -335,6 +335,14 @@ ${blocks}
         <button type="button" class="button button--blue" data-action="login" data-message="${attr(header.loginMessage || "")}">${esc(header.loginLabel || "登録/ログイン")}</button>
       </div>
     </div>
+    <nav class="site-menu" id="site-menu" aria-label="サイトメニュー" hidden>
+      <ul class="site-menu__list">
+        <li><a class="site-menu__link" href="#top">記事トップ</a></li>
+        <li><a class="site-menu__link" href="${attr(submitHref)}"${openEditorAttr(submitHref)}>${esc(header.submitLabel || "この記事を編集")}</a></li>
+        <li><a class="site-menu__link" href="#about">このサイトについて</a></li>
+        <li><a class="site-menu__link" href="guide.html">使い方</a></li>
+      </ul>
+    </nav>
   </header>`;
   }
 

@@ -268,6 +268,36 @@
       signal,
     });
 
+    /* Hamburger menu */
+    const menuToggle = $("[data-menu-toggle]", root);
+    const menu = $("#site-menu", root);
+    const setMenu = (open) => {
+      if (!menuToggle || !menu) return;
+      menu.hidden = !open;
+      menuToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      menuToggle.setAttribute("aria-label", open ? "メニューを閉じる" : "メニューを開く");
+    };
+    menuToggle?.addEventListener("click", () => setMenu(menu.hidden), { signal });
+    document.addEventListener(
+      "click",
+      (event) => {
+        if (!menu || menu.hidden) return;
+        if (event.target.closest(".site-menu__link") || !event.target.closest("#site-menu, [data-menu-toggle]")) {
+          setMenu(false);
+        }
+      },
+      { signal },
+    );
+    document.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key !== "Escape" || !menu || menu.hidden) return;
+        setMenu(false);
+        menuToggle.focus();
+      },
+      { signal },
+    );
+
     /* Delegated actions */
     document.addEventListener(
       "click",

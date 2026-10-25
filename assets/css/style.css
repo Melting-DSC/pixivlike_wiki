@@ -334,6 +334,44 @@ a:hover {
   display: none;
 }
 
+/* Menu ---------------------------------------------------------------- */
+
+.site-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: min(100%, 280px);
+  padding: 8px 0;
+  border-radius: 0 0 8px 0;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(18, 35, 55, 0.22);
+}
+
+.site-menu[hidden] {
+  display: none;
+}
+
+.site-menu__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-menu__link {
+  display: block;
+  padding: 12px 20px;
+  color: var(--text-1);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-menu__link:hover,
+.site-menu__link:focus-visible {
+  background: #f2f4f7;
+  text-decoration: none;
+}
+
 /* Search -------------------------------------------------------------- */
 
 .search {
