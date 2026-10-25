@@ -58,6 +58,8 @@
     return text.replace(/\u0001(\d+)\u0001/g, (_, index) => held[Number(index)] ?? "");
   }
 
+  const breakLines = (html) => html.replace(/\r?\n/g, "<br>");
+
   function plainText(value) {
     return String(value ?? "")
       .replace(/\[\[([^\]|]+?)(?:\|([^\]]+?))?\]\]/g, (_, term, label) => label || term)
@@ -98,7 +100,7 @@
   function renderBlock(block) {
     switch (block.type) {
       case "paragraph":
-        return `<p>${inline(block.text)}</p>`;
+        return `<p>${breakLines(inline(block.text))}</p>`;
 
       case "list": {
         const tag = block.ordered ? "ol" : "ul";
@@ -245,7 +247,7 @@ ${blocks}
             <ul class="article-actions">${renderArticleActions(article)}</ul>
           </div>
         </header>
-        ${article.tagline ? `<p class="article-tagline">${esc(article.tagline)}</p>` : ""}
+        ${article.tagline ? `<p class="article-tagline">${breakLines(esc(article.tagline))}</p>` : ""}
 
         <div class="article-meta">
           <span>最終更新：${esc(article.updated || "—")}</span>
