@@ -4,7 +4,7 @@
     "badge": "PARODY",
     "mark": "assets/images/mark.svg",
     "tagline": "みんなでつくる、ちょっと自由な百科事典。",
-    "description": "C言語を題材にした、うちのこ百科事典。ピクシブ百科事典の外観を参考にした非公式パロディサイトで、本文・画像・カテゴリ・項目数はJSONから編集できます。",
+    "description": "C言語を題材にした、うちのこ百科事典。ピクシブ百科事典の外観を参考にした非公式パロディサイトで、本文・画像・カテゴリなどはブラウザ上で編集できます。",
     "lang": "ja",
     "themeColor": "#314e6f"
   },
@@ -18,8 +18,8 @@
     "menuLabel": "メニューを開く",
     "searchPlaceholder": "けんさく...",
     "searchLabel": "サイト内を検索",
-    "submitLabel": "記事を投稿",
-    "submitHref": "editor.html",
+    "submitLabel": "この記事を編集",
+    "submitHref": "#editor",
     "loginLabel": "登録/ログイン",
     "loginMessage": "ここはパロディサイトなので、登録もログインも不要です。どうぞごゆっくり。"
   },
@@ -47,10 +47,6 @@
         "query": "組み込み"
       },
       {
-        "label": "カテゴリ一覧",
-        "href": "#categories"
-      },
-      {
         "label": "関連タグ",
         "href": "#related-tags"
       }
@@ -65,10 +61,6 @@
           {
             "label": "このサイトについて",
             "href": "#about"
-          },
-          {
-            "label": "カテゴリ一覧",
-            "href": "#categories"
           },
           {
             "label": "参考にしたページ",
@@ -98,16 +90,12 @@
         "title": "編集",
         "links": [
           {
-            "label": "コンテンツエディタ",
-            "href": "editor.html"
+            "label": "編集モードを開く",
+            "href": "#editor"
           },
           {
-            "label": "編集ガイド",
+            "label": "このサイトの使い方",
             "href": "guide.html"
-          },
-          {
-            "label": "データ構造",
-            "href": "guide.html#data-structure"
           }
         ]
       },
@@ -160,12 +148,8 @@
         "title": "サイト",
         "links": [
           {
-            "label": "カテゴリ一覧",
-            "href": "#categories"
-          },
-          {
-            "label": "編集する",
-            "href": "editor.html"
+            "label": "編集モードを開く",
+            "href": "#editor"
           },
           {
             "label": "このサイトについて",

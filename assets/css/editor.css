@@ -1521,10 +1521,6 @@
     font-size: 10px;
   }
 
-  .editor-topbar__actions .button--ghost {
-    display: none;
-  }
-
   .panel-head h1 {
     font-size: 21px;
   }
@@ -1652,5 +1648,127 @@
   .editor-loading__spinner,
   .editor-status__dot {
     animation: none;
+  }
+}
+
+/* ==========================================================================
+   Embedded overlay
+   ========================================================================== */
+
+body.is-editor-open {
+  overflow: hidden;
+}
+
+.editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #edf1f5;
+}
+
+.editor-overlay .editor-page {
+  min-height: 100%;
+}
+
+.editor-overlay[hidden] {
+  display: none;
+}
+
+.editor-overlay:focus {
+  outline: none;
+}
+
+/* ==========================================================================
+   Export / import
+   ========================================================================== */
+
+.export-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 2px 0 14px;
+}
+
+.export-card {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 14px;
+  border: 1px solid #e4e9ee;
+  border-radius: 11px;
+  background: #fbfcfd;
+}
+
+.export-card h3 {
+  margin: 0;
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.export-card p {
+  flex: 1;
+  margin: 0;
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.export-card .button {
+  align-self: flex-start;
+  margin-top: 3px;
+}
+
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   Uploaded images
+   ========================================================================== */
+
+.field input[type="file"] {
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px dashed #cdd8e2;
+  border-radius: 7px;
+  background: #fbfcfd;
+  color: var(--text-3);
+  font-size: 10.5px;
+  cursor: pointer;
+}
+
+.field input[type="file"]:hover {
+  border-color: #8fb9dd;
+  background: #f5faff;
+}
+
+.image-preview {
+  margin-top: 2px;
+  padding: 9px;
+  border: 1px solid #e4e9ee;
+  border-radius: 9px;
+  background: #f7f9fb;
+}
+
+.image-preview img {
+  display: block;
+  max-width: 100%;
+  max-height: 220px;
+  margin: 0 auto;
+  border-radius: 6px;
+}
+
+.hero-preview img[hidden] {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .export-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

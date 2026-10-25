@@ -1,7 +1,10 @@
 /* ==========================================================================
-   Content editor for the parody encyclopedia.
-   Loads content/*.json, provides structural forms, and (when served by
-   scripts/serve.mjs) saves + rebuilds the site through /api/save.
+   In-page content editor.
+
+   The editor lives in index.html and opens as a full-screen overlay, so
+   moving between the article and the editor never reloads the page. Changes
+   are saved to localStorage automatically. Uploaded images stay in memory
+   only; the store replaces their data: URLs with an empty string.
    ========================================================================== */
 
 (() => {
@@ -10,6 +13,7 @@
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
+  const overlay = $("#editor-overlay");
   const app = $("#editor-app");
   const loading = $("#editor-loading");
   const errorBox = $("#editor-error");
@@ -25,8 +29,8 @@
   const jsonFileTag = $("#json-file-tag");
   const importInputs = [$("#import-files"), $("#import-files-error")].filter(Boolean);
 
-  const state = { site: null, article: null, categories: null };
-  const PANELS = ["basic", "body", "categories", "site", "json"];
+  let state = { site: null, article: null, categories: null };
+  const PANELS = ["basic", "body", "categories", "site", "export", "json"];
   const BLOCK_TYPES = [
     ["paragraph", "段落"],
     ["list", "リスト"],
@@ -42,10 +46,12 @@
 
   let activePanel = "basic";
   let dirty = false;
-  let saving = false;
+  let loaded = false;
+  let isOpen = false;
   let jsonKey = "site";
   let toastTimer = 0;
-  let loaded = false;
+  let persistTimer = 0;
+  let savedScrollY = 0;
 
   /* ======================================================================== *
    * Small utilities
@@ -112,20 +118,57 @@
     toastTimer = window.setTimeout(() => toastEl.classList.remove("is-visible"), duration);
   }
 
+  function updateSavebar() {
+    if (!savebar) return;
+    savebar.hidden = !dirty;
+    if (savebarText) savebarText.textContent = "変更を自動保存しています…";
+  }
+
+  function schedulePersist() {
+    window.clearTimeout(persistTimer);
+    persistTimer = window.setTimeout(() => persistNow({ silent: true }), 350);
+  }
+
+  function persistNow({ silent = false } = {}) {
+    if (!loaded || !state.article) return false;
+    window.clearTimeout(persistTimer);
+    const result = WindowStoreSafe.save(state);
+    if (!result.ok) {
+      setStatus("error", "保存できませんでした");
+      showToast(
+        `このブラウザに保存できませんでした（${result.error?.message || "容量不足の可能性"}）。JSONで書き出して保管してください。`,
+        "error",
+        8000,
+      );
+      return false;
+    }
+    dirty = false;
+    const uploaded = WindowStoreSafe.countUploadedAssets(state);
+    setStatus("saved", uploaded ? "保存済み（画像は再選択）" : "このブラウザに保存済み");
+    if (statusEl) {
+      statusEl.title = uploaded
+        ? "アップロードした画像は保存されません。再訪時に選び直してください。"
+        : "編集内容はこのブラウザのlocalStorageに保存されています。";
+    }
+    updateSavebar();
+    if (!silent) showToast("このブラウザに保存しました。", "success");
+    return true;
+  }
+
   function markDirty() {
     if (!loaded) return;
     dirty = true;
-    if (!saving) setStatus("dirty", "未保存の変更");
+    setStatus("dirty", "自動保存しています…");
     updateSavebar();
+    schedulePersist();
   }
 
-  function updateSavebar() {
-    if (!savebar) return;
-    savebar.hidden = !dirty && !saving;
-    if (savebarText) {
-      savebarText.textContent = saving ? "保存してビルドしています…" : "未保存の変更があります";
-    }
-  }
+  // A tiny indirection so the store can be mocked in tests if needed.
+  const WindowStoreSafe = {
+    save: (value) => window.WikiStore.save(value),
+    fetchDefaults: () => window.WikiStore.fetchDefaults(),
+    countUploadedAssets: (value) => window.WikiStore.countUploadedAssets(value),
+  };
 
   function selected(value, current) {
     return String(value) === String(current) ? " selected" : "";
@@ -139,31 +182,25 @@
     return `<p class="empty-state">${esc(message)}</p>`;
   }
 
+  function isDataUrl(value) {
+    return typeof value === "string" && value.trim().startsWith("data:");
+  }
+
+  function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(reader.error || new Error("画像を読み込めませんでした。"));
+      reader.readAsDataURL(file);
+    });
+  }
+
   /* ======================================================================== *
    * Loading / showing / error
    * ======================================================================== */
 
-  async function fetchJSON(file) {
-    const response = await fetch(`content/${file}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`content/${file} を読み込めませんでした（HTTP ${response.status}）。`);
-    return response.json();
-  }
-
-  async function loadAll() {
-    setStatus("loading", "読み込み中…");
-    loading.hidden = false;
-    errorBox.hidden = true;
-    app.hidden = true;
-
-    const [site, article, categories] = await Promise.all([
-      fetchJSON("site.json"),
-      fetchJSON("article.json"),
-      fetchJSON("categories.json"),
-    ]);
-
-    state.site = site;
-    state.article = article;
-    state.categories = categories;
+  function adoptState(next) {
+    state = next;
     loaded = true;
     showEditor();
   }
@@ -177,7 +214,7 @@
     syncJsonArea();
     setPanel(activePanel, false);
     dirty = false;
-    setStatus("saved", "保存済み");
+    setStatus("saved", WindowStoreSafe.countUploadedAssets(state) ? "保存済み（画像は再選択）" : "このブラウザに保存済み");
     updateSavebar();
   }
 
@@ -187,22 +224,21 @@
     app.hidden = true;
     errorBox.hidden = false;
 
-    const isFile = window.location.protocol === "file:";
-    const base = isFile
-      ? "file:// で直接開くと、ブラウザのセキュリティ制限で content/*.json を読み込めません。"
-      : "JSONの読み込み中にエラーが発生しました。";
     const detail = error?.message ? `（${error.message}）` : "";
-    errorMessage.textContent = `${base}${detail} ローカルサーバーを起動するか、下のファイル選択から3つのJSONを読み込んでください。`;
+    errorMessage.textContent = `${detail} JSONを読み込むか、サーバー経由でページを開き直してください。`;
     setStatus("error", "読み込みエラー");
   }
 
   function fillStaticFields() {
+    if (!state.article) return;
     for (const field of $$("[data-path]")) {
       const path = field.dataset.path;
       const value = getPath(state, path);
 
       if (field.type === "checkbox") {
         field.checked = Boolean(value);
+      } else if (field.type === "file") {
+        continue;
       } else if (field.dataset.transform === "csv") {
         field.value = Array.isArray(value) ? value.join("、") : value ?? "";
       } else {
@@ -215,7 +251,14 @@
 
   function updateHeroPreview() {
     if (!heroPreview) return;
-    const src = state.article?.hero?.src || "assets/images/c-language.svg";
+    const src = state.article?.hero?.src || "";
+    if (!src) {
+      heroPreview.removeAttribute("src");
+      heroPreview.alt = "";
+      heroPreview.hidden = true;
+      return;
+    }
+    heroPreview.hidden = false;
     if (heroPreview.getAttribute("src") !== src) heroPreview.setAttribute("src", src);
     heroPreview.alt = state.article?.hero?.alt || "";
   }
@@ -274,7 +317,7 @@
           .map(
             (row, index) => `<div class="repeat-row">
   <input type="text" data-path="article.breadcrumb.${index}.label" value="${attr(row.label)}" placeholder="階層名" aria-label="パンくず ${index + 1} の名前">
-  <input type="text" data-path="article.breadcrumb.${index}.href" value="${attr(row.href)}" placeholder="#categories" aria-label="パンくず ${index + 1} のリンク先">
+  <input type="text" data-path="article.breadcrumb.${index}.href" value="${attr(row.href)}" placeholder="#top" aria-label="パンくず ${index + 1} のリンク先">
   <button type="button" class="row-icon-button" data-remove-array="article.breadcrumb" data-index="${index}" aria-label="この階層を削除">×</button>
 </div>`,
           )
@@ -291,7 +334,7 @@
           .map(
             (row, index) => `<div class="repeat-row repeat-row--action">
   <input type="text" data-path="article.actions.${index}.label" value="${attr(row.label)}" placeholder="リンク名" aria-label="リンク ${index + 1} の名前">
-  <input type="text" data-path="article.actions.${index}.href" value="${attr(row.href)}" placeholder="#top" aria-label="リンク ${index + 1} のリンク先">
+  <input type="text" data-path="article.actions.${index}.href" value="${attr(row.href)}" placeholder="#editor" aria-label="リンク ${index + 1} のリンク先">
   <label class="repeat-row__check"><input type="checkbox" data-path="article.actions.${index}.primary"${checked(row.primary)}>太字</label>
   <button type="button" class="row-icon-button" data-remove-array="article.actions" data-index="${index}" aria-label="このリンクを削除">×</button>
 </div>`,
@@ -393,7 +436,6 @@
 
   function blockEditorHTML(block, sectionIndex, blockIndex) {
     const path = `article.sections.${sectionIndex}.blocks.${blockIndex}`;
-    const type = BLOCK_LABELS[block.type] ? block.type : "paragraph";
     const blocks = state.article.sections[sectionIndex].blocks;
 
     return `<div class="block-editor" data-block="${sectionIndex}:${blockIndex}">
@@ -471,11 +513,20 @@
   </label>
 </div>`;
 
-      case "figure":
+      case "figure": {
+        const src = block.src || "";
+        const preview = src
+          ? `<div class="image-preview"><img src="${attr(src)}" alt="" data-image-preview="${path}.src"></div>`
+          : `<p class="block-editor__empty">画像が設定されていません。</p>`;
         return `<div class="field-grid">
   <label class="field field--full">
+    <span class="field__label">画像をアップロード</span>
+    <input type="file" accept="image/*" data-upload-image="${path}.src">
+    <span class="field__hint">アップロード画像はブラウザに保存されません。再訪時は再選択してください。</span>
+  </label>
+  <label class="field field--full">
     <span class="field__label">画像パス</span>
-    <input type="text" data-path="${path}.src" value="${attr(block.src || "")}" placeholder="assets/images/pointer-map.svg">
+    <input type="text" data-path="${path}.src" value="${attr(src)}" placeholder="assets/images/pointer-map.svg">
   </label>
   <label class="field field--full">
     <span class="field__label">代替テキスト</span>
@@ -489,13 +540,15 @@
     <span class="field__label">クレジット</span>
     <input type="text" data-path="${path}.credit" value="${attr(block.credit || "")}">
   </label>
+  <div class="field field--full field--preview">${preview}</div>
 </div>`;
+      }
 
       case "tags":
         return `<label class="field field--full">
   <span class="field__label">タグ（1行に1つ）</span>
   <textarea rows="4" data-path="${path}.items" data-transform="lines" placeholder="プログラミング言語&#10;ポインタ">${esc((block.items || []).join("\n"))}</textarea>
-  <span class="field__hint">本文中のタグボタンになります。検索インデックスにも追加されます。</span>
+  <span class="field__hint">本文中のタグボタンになります。検索にも追加されます。</span>
 </label>`;
 
       case "quote":
@@ -734,7 +787,7 @@
   }
 
   function confirmRemove(message) {
-    return window.confirm(`${message}\n\nこの操作は「保存」するまでファイルに反映されません。`);
+    return window.confirm(`${message}\n\nこの操作はこのブラウザに自動保存されます。`);
   }
 
   function addSimple(kind, anchor) {
@@ -743,7 +796,7 @@
     switch (kind) {
       case "breadcrumb":
         state.article.breadcrumb ??= [];
-        state.article.breadcrumb.push({ label: "新しい階層", href: "#categories" });
+        state.article.breadcrumb.push({ label: "新しい階層", href: "#top" });
         renderBreadcrumbs();
         break;
       case "action":
@@ -932,6 +985,13 @@
 
     if (path.startsWith("article.hero.")) updateHeroPreview();
     if (path === "article.relatedTags") updateStats();
+    if (path.endsWith(".src")) {
+      const preview = $(`img[data-image-preview="${path}"]`);
+      if (preview) {
+        preview.setAttribute("src", field.value);
+        preview.hidden = !field.value;
+      }
+    }
 
     if (path.startsWith("categories.groups.") && path.endsWith(".color")) {
       const groupIndex = path.split(".")[2];
@@ -1008,8 +1068,42 @@
     markDirty();
   }
 
+  async function handleImageUpload(input) {
+    const path = input.dataset.uploadImage;
+    const file = input.files?.[0];
+    if (!path || !file) return;
+
+    if (!file.type.startsWith("image/")) {
+      showToast("画像ファイルを選択してください。", "error");
+      input.value = "";
+      return;
+    }
+    if (file.size > 12 * 1024 * 1024) {
+      showToast("画像が大きすぎます。12MB以下の画像を選択してください。", "error", 6000);
+      input.value = "";
+      return;
+    }
+
+    try {
+      const dataUrl = await readFileAsDataURL(file);
+      setPath(state, path, dataUrl);
+
+      if (path.startsWith("article.hero.")) {
+        fillStaticFields();
+      } else if (path.startsWith("article.sections.")) {
+        renderSections();
+      }
+      markDirty();
+      showToast("画像を設定しました。この画像はブラウザに保存されません。", "info", 5200);
+    } catch (error) {
+      showToast(`画像を読み込めませんでした（${error.message}）。`, "error", 6000);
+    } finally {
+      input.value = "";
+    }
+  }
+
   /* ======================================================================== *
-   * Save / export
+   * Persistence
    * ======================================================================== */
 
   function sanitizeState() {
@@ -1045,9 +1139,7 @@
 
     if (site) {
       site.spotlight ??= { label: "注目", items: [] };
-      site.spotlight.items = (site.spotlight.items ?? []).filter((item) =>
-        String(item.label ?? "").trim(),
-      );
+      site.spotlight.items = (site.spotlight.items ?? []).filter((item) => String(item.label ?? "").trim());
       site.footer ??= { columns: [] };
       site.footer.columns = (site.footer.columns ?? []).map((column) => ({
         ...column,
@@ -1061,171 +1153,74 @@
     }
   }
 
-  async function saveAll() {
-    if (saving || !loaded) return;
-    sanitizeState();
-    saving = true;
-    setStatus("saving", "保存してビルド中…");
-    setSavingControls(true);
-    updateSavebar();
-
+  function downloadSingleJSON() {
+    if (!jsonArea) return;
     try {
-      const response = await fetch("/api/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(state),
-      });
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok || !data.ok) {
-        throw new Error(data.error || `保存に失敗しました（HTTP ${response.status}）。`);
-      }
-
-      dirty = false;
-      fillStaticFields();
-      renderAll();
-      syncJsonArea();
-      setStatus("saved", "保存済み");
-      showToast("保存して index.html を再生成しました。サイトを再読込してください。", "success", 5000);
+      const parsed = JSON.parse(jsonArea.value);
+      const payload = `${JSON.stringify(parsed, null, 2)}\n`;
+      WikiExport.downloadBlob(`${jsonKey}.json`, new Blob([payload], { type: "application/json" }));
+      showToast(`${jsonKey}.json を書き出しました。`, "success");
     } catch (error) {
-      console.error(error);
-      setStatus("error", "保存できませんでした");
-      const detail = String(error?.message || error).slice(0, 320);
-      showToast(
-        `${detail} 静的ホスティングの場合は「書き出し」でJSONを保存してください。`,
-        "error",
-        8000,
-      );
-    } finally {
-      saving = false;
-      setSavingControls(false);
-      updateSavebar();
+      showToast(`JSONの構文エラー: ${error.message}`, "error", 6000);
     }
   }
 
-  function setSavingControls(isSaving) {
-    for (const button of $$('[data-action="save"]')) {
-      button.disabled = isSaving;
-      if (button.id === "save-button") button.textContent = isSaving ? "ビルド中…" : "保存してビルド";
-    }
-  }
-
-  function downloadBlob(filename, blob) {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 2000);
-  }
-
-  /* ------------------------------- zip ---------------------------------- */
-
-  const CRC_TABLE = (() => {
-    const table = new Uint32Array(256);
-    for (let n = 0; n < 256; n += 1) {
-      let c = n;
-      for (let k = 0; k < 8; k += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-      table[n] = c >>> 0;
-    }
-    return table;
-  })();
-
-  function crc32(bytes) {
-    let crc = 0xffffffff;
-    for (const byte of bytes) crc = CRC_TABLE[(crc ^ byte) & 0xff] ^ (crc >>> 8);
-    return (crc ^ 0xffffffff) >>> 0;
-  }
-
-  function dosDateTime(date = new Date()) {
-    return {
-      time: (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2),
-      date: ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
-    };
-  }
-
-  function zipStore(entries) {
-    const encoder = new TextEncoder();
-    const { time, date } = dosDateTime();
-    const localChunks = [];
-    const centralChunks = [];
-    let offset = 0;
-
-    for (const entry of entries) {
-      const nameBytes = encoder.encode(entry.name);
-      const dataBytes = encoder.encode(entry.text);
-      const crc = crc32(dataBytes);
-
-      const local = new Uint8Array(30 + nameBytes.length);
-      const localView = new DataView(local.buffer);
-      localView.setUint32(0, 0x04034b50, true);
-      localView.setUint16(4, 20, true);
-      localView.setUint16(6, 0x0800, true);
-      localView.setUint16(8, 0, true);
-      localView.setUint16(10, time, true);
-      localView.setUint16(12, date, true);
-      localView.setUint32(14, crc, true);
-      localView.setUint32(18, dataBytes.length, true);
-      localView.setUint32(22, dataBytes.length, true);
-      localView.setUint16(26, nameBytes.length, true);
-      localView.setUint16(28, 0, true);
-      local.set(nameBytes, 30);
-
-      localChunks.push(local, dataBytes);
-
-      const central = new Uint8Array(46 + nameBytes.length);
-      const centralView = new DataView(central.buffer);
-      centralView.setUint32(0, 0x02014b50, true);
-      centralView.setUint16(4, 20, true);
-      centralView.setUint16(6, 20, true);
-      centralView.setUint16(8, 0x0800, true);
-      centralView.setUint16(10, 0, true);
-      centralView.setUint16(12, time, true);
-      centralView.setUint16(14, date, true);
-      centralView.setUint32(16, crc, true);
-      centralView.setUint32(20, dataBytes.length, true);
-      centralView.setUint32(24, dataBytes.length, true);
-      centralView.setUint16(28, nameBytes.length, true);
-      centralView.setUint16(30, 0, true);
-      centralView.setUint16(32, 0, true);
-      centralView.setUint16(34, 0, true);
-      centralView.setUint16(36, 0, true);
-      centralView.setUint32(38, 0, true);
-      centralView.setUint32(42, offset, true);
-      central.set(nameBytes, 46);
-      centralChunks.push(central);
-
-      offset += local.length + dataBytes.length;
-    }
-
-    const centralSize = centralChunks.reduce((sum, chunk) => sum + chunk.length, 0);
-    const end = new Uint8Array(22);
-    const endView = new DataView(end.buffer);
-    endView.setUint32(0, 0x06054b50, true);
-    endView.setUint16(4, 0, true);
-    endView.setUint16(6, 0, true);
-    endView.setUint16(8, entries.length, true);
-    endView.setUint16(10, entries.length, true);
-    endView.setUint32(12, centralSize, true);
-    endView.setUint32(16, offset, true);
-    endView.setUint16(20, 0, true);
-
-    return new Blob([...localChunks, ...centralChunks, end], { type: "application/zip" });
-  }
-
-  function downloadAll() {
+  async function handleExport(kind) {
     if (!loaded) return;
     sanitizeState();
-    const blob = zipStore(
-      ["site", "article", "categories"].map((key) => ({
-        name: `content/${key}.json`,
-        text: `${JSON.stringify(state[key], null, 2)}\n`,
-      })),
-    );
-    downloadBlob("pixpedia-content.zip", blob);
-    showToast("content/*.json をZIPで書き出しました。プロジェクト直下で展開してください。", "success", 5200);
+
+    const buttons = $$("[data-export]");
+    const label = kind.toUpperCase();
+    for (const button of buttons) button.disabled = true;
+    setStatus("saving", `${label} を書き出しています…`);
+
+    try {
+      if (kind === "json") {
+        WikiExport.exportJSON(state);
+      } else if (kind === "html") {
+        await WikiExport.exportHTML(state);
+      } else if (kind === "png") {
+        await WikiExport.exportPNG(state);
+      } else if (kind === "pdf") {
+        await WikiExport.exportPDF(state);
+      }
+      showToast(`${label} を書き出しました。`, "success", 5200);
+    } catch (error) {
+      console.error(error);
+      showToast(`${label} の書き出しに失敗しました（${error.message}）。`, "error", 8000);
+    } finally {
+      for (const button of buttons) button.disabled = false;
+      setStatus("saved", WindowStoreSafe.countUploadedAssets(state) ? "保存済み（画像は再選択）" : "このブラウザに保存済み");
+    }
+  }
+
+  async function resetToDefaults() {
+    if (!window.confirm("このブラウザに保存した編集内容を削除して、初期データに戻しますか？")) return;
+    try {
+      const defaults = await WindowStoreSafe.fetchDefaults();
+      window.WikiStore.clear();
+      state = defaults;
+      loaded = true;
+      window.WikiSite.setState(state);
+      showEditor();
+      persistNow({ silent: true });
+      showToast("初期データに戻しました。", "success");
+    } catch (error) {
+      showToast(`初期データを読み込めませんでした（${error.message}）。`, "error", 6000);
+    }
+  }
+
+  async function reloadFromSource() {
+    try {
+      const next = await window.WikiStore.load();
+      state = next;
+      loaded = true;
+      window.WikiSite.setState(state);
+      showEditor();
+      showToast("最新のデータを読み込みました。", "success");
+    } catch (error) {
+      showError(error);
+    }
   }
 
   /* ======================================================================== *
@@ -1271,7 +1266,7 @@
     renderAll();
     syncJsonArea();
     markDirty();
-    showToast(`${jsonKey}.json をエディタに反映しました。保存前に内容を確認してください。`, "success");
+    showToast(`${jsonKey}.json をエディタに反映しました。`, "success");
   }
 
   function formatJson() {
@@ -1306,7 +1301,7 @@
         let key = "";
         if (Array.isArray(data.sections) || lower.includes("article")) key = "article";
         else if (Array.isArray(data.groups) || lower.includes("categor")) key = "categories";
-        else if (data.site && (data.footer || data.header || data.menu) || lower.includes("site")) key = "site";
+        else if ((data.site && (data.footer || data.header || data.menu)) || lower.includes("site")) key = "site";
 
         if (!key) {
           failures.push(`${file.name}（種類を判別できません）`);
@@ -1325,7 +1320,14 @@
     };
 
     if (!next.site || !next.article || !next.categories) {
-      showToast("site.json / article.json / categories.json の3つを選択してください。", "error", 6000);
+      showToast("site・article・categories を含むJSONを選択してください。", "error", 6000);
+      if (failures.length) console.warn("読み込み失敗:", failures);
+      return;
+    }
+
+    const check = window.WikiStore.validate(next);
+    if (check.errors.length) {
+      showToast(`読み込めませんでした: ${check.errors[0]}`, "error", 8000);
       if (failures.length) console.warn("読み込み失敗:", failures);
       return;
     }
@@ -1334,22 +1336,75 @@
     state.article = next.article;
     state.categories = next.categories;
     loaded = true;
+    sanitizeState();
+    window.WikiSite.setState(state);
 
-    const wasHidden = app.hidden;
-    if (wasHidden) {
-      activePanel = "basic";
-      showEditor();
-    } else {
-      fillStaticFields();
-      renderAll();
-      syncJsonArea();
-    }
+    fillStaticFields();
+    renderAll();
+    syncJsonArea();
     markDirty();
+    persistNow({ silent: true });
     showToast(
-      `${Object.keys(loadedFiles).length}ファイルを読み込みました。内容を確認して「保存してビルド」を押してください。`,
+      `${Object.keys(loadedFiles).length}ファイルを読み込み、このブラウザに保存しました。`,
       "success",
       5200,
     );
+  }
+
+  /* ======================================================================== *
+   * Open / close
+   * ======================================================================== */
+
+  function openEditor() {
+    if (!overlay) return;
+    savedScrollY = window.scrollY;
+    overlay.hidden = false;
+    document.body.classList.add("is-editor-open");
+    isOpen = true;
+    overlay.scrollTop = 0;
+
+    if (loaded) {
+      fillStaticFields();
+      renderAll();
+      syncJsonArea();
+      dirty = false;
+      setStatus("saved", WindowStoreSafe.countUploadedAssets(state) ? "保存済み（画像は再選択）" : "このブラウザに保存済み");
+      updateSavebar();
+    } else {
+      loading.hidden = true;
+      app.hidden = true;
+      errorBox.hidden = false;
+      errorMessage.textContent =
+        "編集データを読み込めていません。JSONを読み込むか、ページを再読み込みしてください。";
+      setStatus("error", "読み込みエラー");
+    }
+
+    try {
+      window.history.replaceState(null, "", `${location.pathname}${location.search}#editor`);
+    } catch {
+      /* file:// contexts may refuse history updates */
+    }
+
+    window.requestAnimationFrame(() => {
+      ($(".editor-nav__item.is-active") || $(".editor-brand"))?.focus({ preventScroll: true });
+    });
+  }
+
+  function closeEditor() {
+    if (!overlay || overlay.hidden) return;
+    persistNow({ silent: true });
+    overlay.hidden = true;
+    document.body.classList.remove("is-editor-open");
+    isOpen = false;
+
+    try {
+      window.history.replaceState(null, "", `${location.pathname}${location.search}`);
+    } catch {
+      /* noop */
+    }
+
+    window.WikiSite.render();
+    window.scrollTo({ top: savedScrollY, behavior: "auto" });
   }
 
   /* ======================================================================== *
@@ -1371,16 +1426,8 @@
     }
 
     if (name === "json") syncJsonArea();
-    if (changed && scroll && window.scrollY > 120) {
-      $(".editor-main")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-    if (history.replaceState) {
-      try {
-        const target = name === "basic" ? `${location.pathname}${location.search}` : `#${name}`;
-        history.replaceState(null, "", target);
-      } catch {
-        /* file:// contexts may refuse history updates */
-      }
+    if (changed && scroll) {
+      overlay?.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
 
@@ -1399,13 +1446,11 @@
 
     document.addEventListener("change", (event) => {
       const field = event.target.closest("[data-path], [data-term-key], [data-term-href]");
-      if (!field) return;
-      if (field.hasAttribute("data-term-key")) return handleTermBlur(field);
-      if (field.hasAttribute("data-term-href")) return;
-      handlePathInput(field);
-    });
+      if (field) {
+        if (field.hasAttribute("data-term-key")) handleTermBlur(field);
+        else if (!field.hasAttribute("data-term-href")) handlePathInput(field);
+      }
 
-    document.addEventListener("change", (event) => {
       const typeSelect = event.target.closest("[data-block-type]");
       if (typeSelect) {
         const [sectionIndex, blockIndex] = typeSelect.dataset.blockType.split(":").map(Number);
@@ -1421,9 +1466,18 @@
         importFiles(event.target.files);
         event.target.value = "";
       }
+
+      const upload = event.target.closest("[data-upload-image]");
+      if (upload) handleImageUpload(upload);
     });
 
     document.addEventListener("click", (event) => {
+      if (event.target.closest("[data-close-editor]")) {
+        event.preventDefault();
+        closeEditor();
+        return;
+      }
+
       const panelButton = event.target.closest("[data-panel-target]");
       if (panelButton) {
         setPanel(panelButton.dataset.panelTarget);
@@ -1433,13 +1487,15 @@
       const action = event.target.closest("[data-action]");
       if (action) {
         const name = action.dataset.action;
-        if (name === "save") saveAll();
-        else if (name === "download-all") downloadAll();
-        else if (name === "retry") loadAll().catch(showError);
-        else if (name === "reload") {
-          if (dirty && !window.confirm("未保存の変更は失われます。再読み込みしますか？")) return;
-          loadAll().catch(showError);
-        }
+        if (name === "save") persistNow({ silent: false });
+        else if (name === "reset-default") resetToDefaults();
+        else if (name === "retry") reloadFromSource();
+        return;
+      }
+
+      const exportButton = event.target.closest("[data-export]");
+      if (exportButton) {
+        handleExport(exportButton.dataset.export);
         return;
       }
 
@@ -1573,30 +1629,27 @@
         const name = jsonAction.dataset.jsonAction;
         if (name === "format") formatJson();
         else if (name === "apply") applyJson();
-        else if (name === "download") {
-          try {
-            const parsed = JSON.parse(jsonArea.value);
-            const payload = `${JSON.stringify(parsed, null, 2)}\n`;
-            downloadBlob(`${jsonKey}.json`, new Blob([payload], { type: "application/json" }));
-            showToast(`${jsonKey}.json を書き出しました。`, "success");
-          } catch (error) {
-            showToast(`JSONの構文エラー: ${error.message}`, "error", 6000);
-          }
-        }
+        else if (name === "download") downloadSingleJSON();
       }
     });
 
     document.addEventListener("keydown", (event) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
         event.preventDefault();
-        saveAll();
+        persistNow({ silent: false });
       }
     });
 
-    window.addEventListener("beforeunload", (event) => {
-      if (!dirty || saving) return;
-      event.preventDefault();
-      event.returnValue = "";
+    window.addEventListener("pagehide", () => {
+      if (loaded) persistNow({ silent: true });
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden" && loaded) persistNow({ silent: true });
+    });
+
+    window.addEventListener("popstate", () => {
+      if (location.hash === "#editor") openEditor();
+      else closeEditor();
     });
   }
 
@@ -1606,10 +1659,24 @@
 
   function boot() {
     bindEvents();
-    const hash = window.location.hash.slice(1);
-    if (PANELS.includes(hash)) activePanel = hash;
 
-    loadAll().catch(showError);
+    if (!window.WikiSite?.ready) {
+      showError(new Error("サイトの初期化に失敗しました。"));
+      return;
+    }
+
+    window.WikiSite.ready
+      .then((next) => {
+        adoptState(next);
+        if (location.hash === "#editor") openEditor();
+      })
+      .catch(showError);
+
+    window.WikiEditor = {
+      open: openEditor,
+      close: closeEditor,
+      isOpen: () => isOpen,
+    };
   }
 
   boot();
