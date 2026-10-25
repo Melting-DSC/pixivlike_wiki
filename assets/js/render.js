@@ -245,6 +245,7 @@ ${blocks}
             <ul class="article-actions">${renderArticleActions(article)}</ul>
           </div>
         </header>
+        ${article.tagline ? `<p class="article-tagline">${esc(article.tagline)}</p>` : ""}
 
         <div class="article-meta">
           <span>最終更新：${esc(article.updated || "—")}</span>

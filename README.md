@@ -147,6 +147,7 @@ PORT=8080 npm run dev
 | `reading` | string | 読み。ページタイトルに表示 |
 | `categories` | string[] | 記事タイトル上に灰色のラベルで横並び表示するカテゴリ（リンクではない）。編集モードの基本情報で編集 |
 | `summary` | string | 冒頭の説明。meta descriptionにも使用 |
+| `tagline` | string | メイン画像の下に斜体の太字で表示するキャプション（任意）。編集モードの基本情報で編集 |
 | `hero` | object | `src`, `alt`, `caption`, `credit`。画像は押しても移動しない空リンク |
 | `actions` | array | `{ label, primary? }`。タイトル下のリンク。押しても移動しない空リンク |
 | `updated` | string | 最終更新日（`YYYY-MM-DD`） |
