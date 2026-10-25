@@ -506,8 +506,7 @@
 .field input[type="date"],
 .field input[type="number"],
 .field select,
-.field textarea,
-.json-toolbar select {
+.field textarea {
   width: 100%;
   min-width: 0;
   padding: 8px 10px;
@@ -529,15 +528,13 @@
 
 .field input:hover,
 .field select:hover,
-.field textarea:hover,
-.json-toolbar select:hover {
+.field textarea:hover {
   border-color: #c5cdd5;
 }
 
 .field input:focus,
 .field select:focus,
-.field textarea:focus,
-.json-toolbar select:focus {
+.field textarea:focus {
   border-color: #8fd3ff;
   background: #fff;
   box-shadow: 0 0 0 3px rgba(0, 150, 250, 0.16);
@@ -652,31 +649,15 @@
 }
 
 .repeat-row--action {
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr) auto 28px;
+  grid-template-columns: minmax(0, 1fr) auto 28px;
 }
 
 .repeat-row--history {
   grid-template-columns: 132px minmax(0, 1fr) 28px;
 }
 
-.repeat-row--spotlight {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 28px;
-}
-
 .repeat-row--linkterm {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) 28px;
-}
-
-.repeat-row--item {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) auto auto 28px;
-}
-
-.repeat-row--footer-link {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 112px 28px;
-}
-
-.repeat-row--menu-link {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 28px;
 }
 
 .repeat-row input.is-invalid,
@@ -767,58 +748,6 @@
 .row-controls .row-icon-button[disabled] {
   opacity: 0.28;
   cursor: default;
-}
-
-/* Nested lists (footer / menu) ----------------------------------------- */
-
-.nested-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.nested-group {
-  padding: 11px 12px;
-  border: 1px solid #e7ebef;
-  border-radius: 9px;
-  background: #fafcfd;
-}
-
-.nested-group__head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.nested-group__head input {
-  width: 100%;
-  min-width: 0;
-  padding: 7px 9px;
-  border: 1px solid #dfe4e9;
-  border-radius: 6px;
-  background: #fff;
-  color: var(--text-1);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.nested-links {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-left: 8px;
-  border-left: 2px solid #e5edf5;
-}
-
-.nested-links .repeat-row {
-  background: #fff;
-}
-
-.nested-add {
-  margin-top: 7px;
 }
 
 /* ==========================================================================
@@ -1064,153 +993,6 @@
   color: var(--text-2);
   font-size: 10px;
   line-height: 1.5;
-}
-
-/* ==========================================================================
-   Category groups
-   ========================================================================== */
-
-.category-editor {
-  margin-bottom: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  border-radius: 13px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03);
-}
-
-.category-editor__head {
-  display: grid;
-  grid-template-columns: 26px minmax(0, 1fr) 86px auto;
-  gap: 9px;
-  align-items: center;
-  padding: 10px 13px;
-  border-bottom: 1px solid #eef1f4;
-  background: linear-gradient(180deg, #fff, #fbfcfd);
-  border-radius: 13px 13px 0 0;
-}
-
-.category-editor__dot {
-  width: 14px;
-  height: 14px;
-  margin-left: 4px;
-  border-radius: 50%;
-  background: var(--category-color, #5b7c99);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--category-color, #5b7c99) 16%, transparent);
-}
-
-.category-editor__head input[type="text"] {
-  width: 100%;
-  min-width: 0;
-  padding: 6px 9px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  outline: 0;
-  background: transparent;
-  color: var(--text-1);
-  font-size: 13.5px;
-  font-weight: 700;
-}
-
-.category-editor__head input[type="text"]:hover {
-  border-color: #dfe6ec;
-  background: #fff;
-}
-
-.category-editor__head input[type="text"]:focus {
-  border-color: #8fd3ff;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(0, 150, 250, 0.14);
-}
-
-.category-editor__head input[type="color"] {
-  width: 36px;
-  height: 28px;
-  padding: 2px;
-  border: 1px solid #dfe4e9;
-  border-radius: 6px;
-  background: #fff;
-  cursor: pointer;
-}
-
-.category-editor__body {
-  padding: 10px 13px 12px;
-}
-
-.category-editor__body .field {
-  margin-bottom: 8px;
-}
-
-.category-editor__meta {
-  display: grid;
-  grid-template-columns: 150px 110px minmax(0, 1fr);
-  gap: 9px;
-  align-items: end;
-  margin-bottom: 9px;
-}
-
-.category-editor__meta .field {
-  margin: 0;
-}
-
-.category-editor__items-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 9px 0 6px;
-  padding-top: 8px;
-  border-top: 1px dashed #e7ebef;
-}
-
-.category-editor__items-head span {
-  color: var(--text-3);
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.category-editor__foot {
-  padding: 0 13px 12px;
-}
-
-/* ==========================================================================
-   JSON panel
-   ========================================================================== */
-
-.json-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 7px;
-  margin-bottom: 9px;
-}
-
-.json-toolbar .field--inline select {
-  width: auto;
-  min-width: 190px;
-  padding: 7px 9px;
-  font-size: 11.5px;
-}
-
-.json-area {
-  width: 100%;
-  min-height: 460px;
-  padding: 12px 14px;
-  border: 1px solid #dce1e6;
-  border-radius: 8px;
-  outline: 0;
-  background: #fbfcfd;
-  color: #26313b;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  line-height: 1.65;
-  tab-size: 2;
-  resize: vertical;
-}
-
-.json-area:focus {
-  border-color: #8fd3ff;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(0, 150, 250, 0.16);
 }
 
 .file-drop {
@@ -1537,9 +1319,7 @@
   .repeat-row,
   .repeat-row--action,
   .repeat-row--history,
-  .repeat-row--spotlight,
-  .repeat-row--linkterm,
-  .repeat-row--item {
+  .repeat-row--linkterm {
     grid-template-columns: minmax(0, 1fr) 26px;
   }
 
@@ -1591,33 +1371,6 @@
 
   .block-editor__bar .row-controls {
     margin-left: 0;
-  }
-
-  .category-editor__head {
-    grid-template-columns: 22px minmax(0, 1fr) 34px 28px;
-    gap: 6px;
-  }
-
-  .category-editor__meta {
-    grid-template-columns: minmax(0, 1fr) 92px;
-  }
-
-  .category-editor__meta .field:last-child {
-    grid-column: 1 / -1;
-  }
-
-  .json-toolbar .field--inline {
-    width: 100%;
-  }
-
-  .json-toolbar .field--inline select {
-    flex: 1;
-    width: 100%;
-  }
-
-  .json-area {
-    min-height: 330px;
-    font-size: 10.5px;
   }
 
   .editor-error {

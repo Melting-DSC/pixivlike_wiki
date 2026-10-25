@@ -246,21 +246,15 @@ ${blocks}
     return items.join(separator);
   }
 
+  /* Article header links and the hero image are empty links: they look like
+     links but do nothing when clicked (main.js cancels `data-empty-link`). */
   function renderArticleActions(article) {
     return (article.actions || [])
       .filter((action) => String(action.label ?? "").trim())
-      .filter((action) => !isCategoryHref(action.href))
-      .map((action) => {
-        const href = safeHref(action.href || "#top");
-        return `<li><a class="article-action${action.primary ? " is-primary" : ""}" href="${attr(href)}"${linkAttrs(href)}${openEditorAttr(href)}><span>${esc(action.label)}</span><span class="article-action__chevron" aria-hidden="true">›</span></a></li>`;
-      })
-      .join("");
-  }
-
-  function renderArticleCategoryChips(article) {
-    return (article.categories || [])
-      .filter(Boolean)
-      .map((name) => `<li><span class="category-tag">${esc(name)}</span></li>`)
+      .map(
+        (action) =>
+          `<li><a class="article-action${action.primary ? " is-primary" : ""}" href="#" data-empty-link><span>${esc(action.label)}</span><span class="article-action__chevron" aria-hidden="true">›</span></a></li>`,
+      )
       .join("");
   }
 
@@ -286,7 +280,7 @@ ${blocks}
     return `<article class="article" id="top">
         <header class="article-head">
           <figure class="hero">
-            <a class="hero__link" href="${attr(safeHref(hero.creditHref || "#about"))}" aria-label="${attr(hero.caption || hero.alt || "記事画像")}">
+            <a class="hero__link" href="#" data-empty-link aria-label="${attr(hero.caption || hero.alt || "記事画像")}">
               ${heroMedia}
               <span class="hero__overlay">
                 <span class="hero__caption">${esc(hero.caption || "")}</span>
@@ -296,7 +290,6 @@ ${blocks}
           </figure>
 
           <div class="article-head__main">
-            <ul class="article-categories" aria-label="この記事のカテゴリ">${renderArticleCategoryChips(article)}</ul>
             <div class="title-row">
               <h1 class="article-title" id="article-name">${esc(article.title || "無題の記事")}</h1>
               <button type="button" class="bookmark" data-action="bookmark" aria-pressed="false" aria-label="この記事を保存">
@@ -414,53 +407,6 @@ ${blocks}
   </header>`;
   }
 
-  function renderSpotlight(state) {
-    const spotlight = state.site?.spotlight;
-    const items = (spotlight?.items || []).filter((item) => !isCategoryHref(item.href));
-    if (!items.length) return "";
-    const links = items
-      .map((item) => {
-        if (item.query) {
-          return `<button type="button" class="spotlight__link" data-search="${attr(item.query)}">${esc(item.label)}</button>`;
-        }
-        const href = safeHref(item.href || "#top");
-        return `<a class="spotlight__link" href="${attr(href)}"${linkAttrs(href)}${openEditorAttr(href)}>${esc(item.label)}</a>`;
-      })
-      .join("");
-    return `<div class="spotlight" aria-label="注目の項目">
-  <div class="spotlight__inner">
-    <span class="spotlight__label">${esc(spotlight?.label || "注目")}</span>
-    <div class="spotlight__items">${links}</div>
-  </div>
-</div>`;
-  }
-
-  function renderFooterColumns(state) {
-    return (state.site?.footer?.columns || [])
-      .map((column) => {
-        const links = (column.links || [])
-          .filter((link) => String(link.label ?? "").trim())
-          .filter((link) => !isCategoryHref(link.href))
-          .map((link) => {
-            if (link.action === "history") {
-              return `<li><button type="button" class="footer-link" data-action="history">${esc(link.label)}</button></li>`;
-            }
-            if (link.action === "soon") {
-              return `<li><button type="button" class="footer-link" data-action="soon" data-message="English版は準備中です。">${esc(link.label)}</button></li>`;
-            }
-            const href = safeHref(link.href || "#top");
-            return `<li><a class="footer-link" href="${attr(href)}"${linkAttrs(href)}${openEditorAttr(href)}>${esc(link.label)}</a></li>`;
-          })
-          .join("");
-        if (!links) return "";
-        return `<div class="footer-column">
-  <h3>${esc(column.title || "")}</h3>
-  <ul>${links}</ul>
-</div>`;
-      })
-      .join("\n");
-  }
-
   function renderFooter(state) {
     const { site = {} } = state;
     return `<footer class="site-footer" id="site-footer">
@@ -470,12 +416,9 @@ ${blocks}
         <img src="${attr(site.site?.mark || "assets/images/mark.svg")}" alt="" width="28" height="28">
         <span>${esc(site.site?.name || "百科事典")}<em>${esc(site.site?.badge || "PARODY")}</em></span>
       </a>
-      <p>${esc(site.footer?.blurb || site.site?.tagline || "")}</p>
     </div>
-    <div class="footer__columns">${renderFooterColumns(state)}</div>
     <div class="footer__legal">
       <p>${esc(site.footer?.disclaimer || "")}</p>
-      <p>${esc(site.footer?.copyright || "")}</p>
     </div>
   </div>
 </footer>`;
@@ -552,7 +495,6 @@ ${blocks}
     return `<a class="skip-link" href="#article-name">本文へスキップ</a>
   ${renderNotice(state)}
   ${renderHeader(state)}
-  ${renderSpotlight(state)}
   <main class="page" id="main">
     <nav class="breadcrumb" aria-label="パンくずリスト">${renderBreadcrumb(state)}</nav>
     <div class="layout">

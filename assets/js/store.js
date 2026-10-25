@@ -17,7 +17,6 @@
   const FILES = {
     site: "content/site.json",
     article: "content/article.json",
-    categories: "content/categories.json",
   };
 
   const isPlainObject = (value) => Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -40,12 +39,8 @@
   }
 
   async function fetchDefaults() {
-    const [site, article, categories] = await Promise.all([
-      fetchJSON(FILES.site),
-      fetchJSON(FILES.article),
-      fetchJSON(FILES.categories),
-    ]);
-    return { site, article, categories };
+    const [site, article] = await Promise.all([fetchJSON(FILES.site), fetchJSON(FILES.article)]);
+    return { site, article };
   }
 
   function readSaved() {
@@ -79,7 +74,6 @@
     return {
       site: deepMerge(defaults.site, saved.site || {}),
       article: deepMerge(defaults.article, saved.article || {}),
-      categories: deepMerge(defaults.categories, saved.categories || {}),
     };
   }
 
@@ -98,7 +92,6 @@
     return {
       site: clone(state.site || {}),
       article,
-      categories: clone(state.categories || {}),
     };
   }
 
@@ -139,7 +132,6 @@
     const warnings = [];
     const site = state.site || {};
     const article = state.article || {};
-    const categories = state.categories || {};
 
     if (!site.site?.name) errors.push("サイト名（site.site.name）が空です。");
     if (!article.title) errors.push("記事タイトル（article.title）が空です。");
@@ -162,18 +154,6 @@
         if (section.blocks === undefined) {
           warnings.push(`セクション「${section.title || index + 1}」に blocks がありません。`);
         }
-      });
-    }
-
-    if (!Array.isArray(categories.groups)) {
-      errors.push("カテゴリ（categories.groups）が配列ではありません。");
-    } else {
-      const ids = new Set();
-      categories.groups.forEach((group, index) => {
-        const id = String(group.id || "").trim();
-        if (!String(group.name || "").trim()) errors.push(`カテゴリ ${index + 1} の名前が空です。`);
-        if (id && ids.has(id)) errors.push(`カテゴリIDが重複しています: ${id}`);
-        if (id) ids.add(id);
       });
     }
 

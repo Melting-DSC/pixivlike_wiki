@@ -24,13 +24,10 @@
   const savebar = $("#editor-savebar");
   const savebarText = $("#editor-savebar-text");
   const heroPreview = $("#hero-preview img");
-  const jsonArea = $("#json-area");
-  const jsonFile = $("#json-file");
-  const jsonFileTag = $("#json-file-tag");
   const importInputs = [$("#import-files"), $("#import-files-error")].filter(Boolean);
 
-  let state = { site: null, article: null, categories: null };
-  const PANELS = ["basic", "body", "categories", "site", "export", "json"];
+  let state = { site: null, article: null };
+  const PANELS = ["basic", "body", "export"];
   const BLOCK_TYPES = [
     ["paragraph", "段落"],
     ["list", "リスト"],
@@ -42,13 +39,11 @@
     ["divider", "区切り線"],
   ];
   const BLOCK_LABELS = Object.fromEntries(BLOCK_TYPES);
-  const CATEGORY_COLORS = ["#5b7c99", "#2f7fbf", "#2f8f83", "#a1762a", "#b25b7a", "#8055c7", "#4f7a3a"];
 
   let activePanel = "basic";
   let dirty = false;
   let loaded = false;
   let isOpen = false;
-  let jsonKey = "site";
   let toastTimer = 0;
   let persistTimer = 0;
   let savedScrollY = 0;
@@ -211,7 +206,6 @@
     app.hidden = false;
     fillStaticFields();
     renderAll();
-    syncJsonArea();
     setPanel(activePanel, false);
     dirty = false;
     setStatus("saved", WindowStoreSafe.countUploadedAssets(state) ? "保存済み（画像は再選択）" : "このブラウザに保存済み");
@@ -273,10 +267,6 @@
     renderLinkTerms();
     renderHistory();
     renderSections();
-    renderCategoryGroups();
-    renderSpotlight();
-    renderFooterColumns();
-    renderMenuSections();
     updateStats();
     updateHeroPreview();
   }
@@ -284,8 +274,6 @@
   function updateStats() {
     const sections = state.article?.sections ?? [];
     const blocks = sections.reduce((sum, section) => sum + (section.blocks?.length || 0), 0);
-    const groups = state.categories?.groups ?? [];
-    const items = groups.reduce((sum, group) => sum + (group.items?.length || 0), 0);
     const tags = state.article?.relatedTags?.length ?? 0;
 
     const setText = (selector, value) => {
@@ -295,15 +283,11 @@
 
     setText("#stat-sections", sections.length);
     setText("#stat-blocks", blocks);
-    setText("#stat-categories", groups.length);
-    setText("#stat-items", items);
     setText("#stat-tags", tags);
     setText("#section-count-label", sections.length);
-    setText("#category-count-label", groups.length);
 
     for (const node of $$('[data-count="sections"]')) node.textContent = sections.length;
     for (const node of $$('[data-count="blocks"]')) node.textContent = blocks;
-    for (const node of $$('[data-count="items"]')) node.textContent = items;
   }
 
   /* ---------------------------- breadcrumb ------------------------------ */
@@ -334,7 +318,6 @@
           .map(
             (row, index) => `<div class="repeat-row repeat-row--action">
   <input type="text" data-path="article.actions.${index}.label" value="${attr(row.label)}" placeholder="リンク名" aria-label="リンク ${index + 1} の名前">
-  <input type="text" data-path="article.actions.${index}.href" value="${attr(row.href)}" placeholder="#editor" aria-label="リンク ${index + 1} のリンク先">
   <label class="repeat-row__check"><input type="checkbox" data-path="article.actions.${index}.primary"${checked(row.primary)}>太字</label>
   <button type="button" class="row-icon-button" data-remove-array="article.actions" data-index="${index}" aria-label="このリンクを削除">×</button>
 </div>`,
@@ -601,175 +584,6 @@
     return next;
   }
 
-  /* ---------------------------- categories ------------------------------ */
-
-  function renderCategoryGroups() {
-    const container = $("#category-groups");
-    if (!container) return;
-    const groups = state.categories?.groups ?? [];
-
-    container.innerHTML = groups.length
-      ? groups
-          .map((group, groupIndex) => {
-            const items = group.items ?? [];
-            const itemRows = items.length
-              ? items
-                  .map(
-                    (item, itemIndex) => `<div class="repeat-row repeat-row--item">
-  <input type="text" data-path="categories.groups.${groupIndex}.items.${itemIndex}.name" value="${attr(item.name)}" placeholder="項目名" aria-label="項目名">
-  <input type="text" data-path="categories.groups.${groupIndex}.items.${itemIndex}.href" value="${attr(item.href || "")}" placeholder="#top" aria-label="リンク先">
-  <label class="repeat-row__check"><input type="checkbox" data-path="categories.groups.${groupIndex}.items.${itemIndex}.current" data-flag="current"${checked(item.current)}>この記事</label>
-  <label class="repeat-row__check"><input type="checkbox" data-path="categories.groups.${groupIndex}.items.${itemIndex}.soon" data-flag="soon"${checked(item.soon)}>未作成</label>
-  <button type="button" class="row-icon-button" data-remove-array="categories.groups.${groupIndex}.items" data-index="${itemIndex}" aria-label="この項目を削除">×</button>
-</div>`,
-                  )
-                  .join("")
-              : emptyState("項目はまだありません。");
-
-            return `<article class="category-editor" data-group="${groupIndex}" style="--category-color:${attr(group.color || "#5b7c99")}">
-  <header class="category-editor__head">
-    <span class="category-editor__dot" aria-hidden="true"></span>
-    <input type="text" data-path="categories.groups.${groupIndex}.name" value="${attr(group.name)}" placeholder="カテゴリ名" aria-label="カテゴリ ${groupIndex + 1} の名前">
-    <input type="color" data-path="categories.groups.${groupIndex}.color" value="${attr(group.color || "#5b7c99")}" aria-label="カテゴリカラー" title="カテゴリカラー">
-    <div class="row-controls">
-      <button type="button" class="row-icon-button" data-move-group="${groupIndex}" data-delta="-1" aria-label="上へ移動"${groupIndex === 0 ? " disabled" : ""}>↑</button>
-      <button type="button" class="row-icon-button" data-move-group="${groupIndex}" data-delta="1" aria-label="下へ移動"${groupIndex === groups.length - 1 ? " disabled" : ""}>↓</button>
-      <button type="button" class="row-icon-button" data-remove-group="${groupIndex}" aria-label="このカテゴリを削除">×</button>
-    </div>
-  </header>
-  <div class="category-editor__body">
-    <div class="category-editor__meta">
-      <label class="field">
-        <span class="field__label">ID（アンカー）</span>
-        <input type="text" data-path="categories.groups.${groupIndex}.id" value="${attr(group.id)}" placeholder="category-${groupIndex + 1}">
-      </label>
-      <label class="field">
-        <span class="field__label">色</span>
-        <input type="text" data-path="categories.groups.${groupIndex}.color" value="${attr(group.color || "")}" placeholder="#5b7c99">
-      </label>
-      <label class="field">
-        <span class="field__label">説明</span>
-        <input type="text" data-path="categories.groups.${groupIndex}.description" value="${attr(group.description || "")}" placeholder="カテゴリの短い説明">
-      </label>
-    </div>
-    <div class="category-editor__items-head">
-      <span>項目 ${items.length} 件</span>
-      <button type="button" class="editor-mini-button" data-add-cat-item="${groupIndex}">＋ 項目を追加</button>
-    </div>
-    <div class="repeat-list">${itemRows}</div>
-  </div>
-</article>`;
-          })
-          .join("")
-      : emptyState("カテゴリはまだありません。「＋ カテゴリを追加」から作成できます。");
-
-    updateStats();
-  }
-
-  /* ----------------------------- spotlight ------------------------------ */
-
-  function renderSpotlight() {
-    const container = $("#spotlight-rows");
-    if (!container) return;
-    const rows = state.site?.spotlight?.items ?? [];
-
-    container.innerHTML = rows.length
-      ? rows
-          .map(
-            (row, index) => `<div class="repeat-row repeat-row--spotlight">
-  <input type="text" data-path="site.spotlight.items.${index}.label" value="${attr(row.label)}" placeholder="表示名" aria-label="注目リンク ${index + 1} の表示名">
-  <input type="text" data-path="site.spotlight.items.${index}.query" value="${attr(row.query || "")}" placeholder="検索語（任意）" aria-label="検索語">
-  <input type="text" data-path="site.spotlight.items.${index}.href" value="${attr(row.href || "")}" placeholder="リンク先（任意）" aria-label="リンク先">
-  <button type="button" class="row-icon-button" data-remove-array="site.spotlight.items" data-index="${index}" aria-label="この注目リンクを削除">×</button>
-</div>`,
-          )
-          .join("")
-      : emptyState("注目リンクはまだありません。");
-  }
-
-  /* --------------------------- footer / menu ---------------------------- */
-
-  function renderFooterColumns() {
-    const container = $("#footer-columns");
-    if (!container) return;
-    const columns = state.site?.footer?.columns ?? [];
-
-    container.innerHTML = columns.length
-      ? columns
-          .map((column, columnIndex) => {
-            const links = column.links ?? [];
-            const linkRows = links.length
-              ? links
-                  .map(
-                    (link, linkIndex) => `<div class="repeat-row repeat-row--footer-link">
-  <input type="text" data-path="site.footer.columns.${columnIndex}.links.${linkIndex}.label" value="${attr(link.label)}" placeholder="リンク名" aria-label="リンク名">
-  <input type="text" data-path="site.footer.columns.${columnIndex}.links.${linkIndex}.href" value="${attr(link.href || "")}" placeholder="#top" aria-label="リンク先">
-  <select data-path="site.footer.columns.${columnIndex}.links.${linkIndex}.action" aria-label="特殊アクション">
-    <option value=""${selected("", link.action)}>通常リンク</option>
-    <option value="history"${selected("history", link.action)}>編集履歴を開く</option>
-    <option value="soon"${selected("soon", link.action)}>準備中トースト</option>
-  </select>
-  <button type="button" class="row-icon-button" data-remove-array="site.footer.columns.${columnIndex}.links" data-index="${linkIndex}" aria-label="このリンクを削除">×</button>
-</div>`,
-                  )
-                  .join("")
-              : emptyState("リンクはまだありません。");
-
-            return `<div class="nested-group">
-  <div class="nested-group__head">
-    <input type="text" data-path="site.footer.columns.${columnIndex}.title" value="${attr(column.title)}" placeholder="列タイトル" aria-label="フッター列のタイトル">
-    <div class="row-controls">
-      <button type="button" class="row-icon-button" data-move-array="site.footer.columns" data-index="${columnIndex}" data-delta="-1" aria-label="上へ移動"${columnIndex === 0 ? " disabled" : ""}>↑</button>
-      <button type="button" class="row-icon-button" data-move-array="site.footer.columns" data-index="${columnIndex}" data-delta="1" aria-label="下へ移動"${columnIndex === columns.length - 1 ? " disabled" : ""}>↓</button>
-      <button type="button" class="row-icon-button" data-remove-array="site.footer.columns" data-index="${columnIndex}" aria-label="この列を削除">×</button>
-    </div>
-  </div>
-  <div class="nested-links">${linkRows}</div>
-  <button type="button" class="editor-mini-button nested-add" data-add-footer-link="${columnIndex}">＋ リンクを追加</button>
-</div>`;
-          })
-          .join("")
-      : emptyState("フッター列はまだありません。");
-  }
-
-  function renderMenuSections() {
-    const container = $("#menu-sections");
-    if (!container) return;
-    const sections = state.site?.menu?.sections ?? [];
-
-    container.innerHTML = sections.length
-      ? sections
-          .map((section, sectionIndex) => {
-            const links = section.links ?? [];
-            const linkRows = links.length
-              ? links
-                  .map(
-                    (link, linkIndex) => `<div class="repeat-row repeat-row--menu-link">
-  <input type="text" data-path="site.menu.sections.${sectionIndex}.links.${linkIndex}.label" value="${attr(link.label)}" placeholder="リンク名" aria-label="リンク名">
-  <input type="text" data-path="site.menu.sections.${sectionIndex}.links.${linkIndex}.href" value="${attr(link.href || "")}" placeholder="#top" aria-label="リンク先">
-  <button type="button" class="row-icon-button" data-remove-array="site.menu.sections.${sectionIndex}.links" data-index="${linkIndex}" aria-label="このリンクを削除">×</button>
-</div>`,
-                  )
-                  .join("")
-              : emptyState("リンクはまだありません。");
-
-            return `<div class="nested-group">
-  <div class="nested-group__head">
-    <input type="text" data-path="site.menu.sections.${sectionIndex}.title" value="${attr(section.title)}" placeholder="セクション名" aria-label="メニューセクション名">
-    <div class="row-controls">
-      <button type="button" class="row-icon-button" data-move-array="site.menu.sections" data-index="${sectionIndex}" data-delta="-1" aria-label="上へ移動"${sectionIndex === 0 ? " disabled" : ""}>↑</button>
-      <button type="button" class="row-icon-button" data-move-array="site.menu.sections" data-index="${sectionIndex}" data-delta="1" aria-label="下へ移動"${sectionIndex === sections.length - 1 ? " disabled" : ""}>↓</button>
-      <button type="button" class="row-icon-button" data-remove-array="site.menu.sections" data-index="${sectionIndex}" aria-label="このセクションを削除">×</button>
-    </div>
-  </div>
-  <div class="nested-links">${linkRows}</div>
-  <button type="button" class="editor-mini-button nested-add" data-add-menu-link="${sectionIndex}">＋ リンクを追加</button>
-</div>`;
-          })
-          .join("")
-      : emptyState("メニューセクションはまだありません。");
-  }
-
   /* ======================================================================== *
    * Structural operations
    * ======================================================================== */
@@ -779,10 +593,6 @@
     if (path.startsWith("article.actions")) return renderActions();
     if (path.startsWith("article.history")) return renderHistory();
     if (path.startsWith("article.sections")) return renderSections();
-    if (path.startsWith("categories.groups")) return renderCategoryGroups();
-    if (path.startsWith("site.spotlight")) return renderSpotlight();
-    if (path.startsWith("site.footer.columns")) return renderFooterColumns();
-    if (path.startsWith("site.menu.sections")) return renderMenuSections();
     return renderAll();
   }
 
@@ -801,7 +611,7 @@
         break;
       case "action":
         state.article.actions ??= [];
-        state.article.actions.push({ label: "新しいリンク", href: "#top" });
+        state.article.actions.push({ label: "新しいリンク" });
         renderActions();
         break;
       case "linkterm": {
@@ -815,22 +625,6 @@
         state.article.history ??= [];
         state.article.history.unshift({ date: today(), note: "更新内容" });
         renderHistory();
-        break;
-      case "spotlight":
-        state.site.spotlight ??= { label: "注目", items: [] };
-        state.site.spotlight.items ??= [];
-        state.site.spotlight.items.push({ label: "新しい注目", query: "C言語" });
-        renderSpotlight();
-        break;
-      case "footer-column":
-        state.site.footer.columns ??= [];
-        state.site.footer.columns.push({ title: "新しい列", links: [{ label: "リンク", href: "#top" }] });
-        renderFooterColumns();
-        break;
-      case "menu-section":
-        state.site.menu.sections ??= [];
-        state.site.menu.sections.push({ title: "新しいセクション", links: [{ label: "リンク", href: "#top" }] });
-        renderMenuSections();
         break;
       default:
         return;
@@ -912,47 +706,6 @@
     markDirty();
   }
 
-  function addGroup() {
-    const groups = state.categories.groups;
-    const id = uniqueId("category", groups.map((group) => group.id));
-    groups.push({
-      id,
-      name: "新しいカテゴリ",
-      color: CATEGORY_COLORS[groups.length % CATEGORY_COLORS.length],
-      description: "",
-      items: [],
-    });
-    renderCategoryGroups();
-    markDirty();
-
-    const editor = $(".category-editor:last-of-type");
-    editor?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }
-
-  function removeGroup(index) {
-    if (!confirmRemove("このカテゴリと収録項目を削除しますか？")) return;
-    state.categories.groups.splice(index, 1);
-    renderCategoryGroups();
-    markDirty();
-  }
-
-  function moveGroup(index, delta) {
-    const groups = state.categories.groups;
-    const target = index + Number(delta);
-    if (target < 0 || target >= groups.length) return;
-    [groups[index], groups[target]] = [groups[target], groups[index]];
-    renderCategoryGroups();
-    markDirty();
-  }
-
-  function addCategoryItem(groupIndex) {
-    const group = state.categories.groups[groupIndex];
-    group.items ??= [];
-    group.items.push({ name: "新しい項目", href: "#top" });
-    renderCategoryGroups();
-    markDirty();
-  }
-
   /* ======================================================================== *
    * Field input handling
    * ======================================================================== */
@@ -990,36 +743,6 @@
       if (preview) {
         preview.setAttribute("src", field.value);
         preview.hidden = !field.value;
-      }
-    }
-
-    if (path.startsWith("categories.groups.") && path.endsWith(".color")) {
-      const groupIndex = path.split(".")[2];
-      const card = $(`.category-editor[data-group="${groupIndex}"]`);
-      const color = String(field.value);
-      if (card && /^#[0-9a-f]{6}$/i.test(color)) {
-        card.style.setProperty("--category-color", color);
-        const picker = $('input[type="color"]', card);
-        if (picker && picker !== field) picker.value = color;
-        const text = $('input[type="text"][data-path$=".color"]', card);
-        if (text && text !== field) text.value = color;
-      }
-    }
-
-    if (field.dataset.flag === "current" && field.checked) {
-      const row = field.closest(".repeat-row");
-      const soon = row?.querySelector('[data-flag="soon"]');
-      if (soon) {
-        soon.checked = false;
-        setPath(state, soon.dataset.path, false);
-      }
-    }
-    if (field.dataset.flag === "soon" && field.checked) {
-      const row = field.closest(".repeat-row");
-      const current = row?.querySelector('[data-flag="current"]');
-      if (current) {
-        current.checked = false;
-        setPath(state, current.dataset.path, false);
       }
     }
 
@@ -1108,11 +831,8 @@
 
   function sanitizeState() {
     const article = state.article;
-    const categories = state.categories;
-    const site = state.site;
 
     if (article) {
-      article.categories = (article.categories ?? []).filter(Boolean);
       article.relatedTags = (article.relatedTags ?? []).filter(Boolean);
       article.breadcrumb = (article.breadcrumb ?? []).filter((row) => String(row.label ?? "").trim());
       article.actions = (article.actions ?? []).filter((row) => String(row.label ?? "").trim());
@@ -1128,40 +848,6 @@
           .filter(([key]) => key),
       );
       article.linkTerms = terms;
-    }
-
-    if (categories) {
-      categories.groups = (categories.groups ?? []).map((group) => ({
-        ...group,
-        items: (group.items ?? []).filter((item) => String(item.name ?? "").trim()),
-      }));
-    }
-
-    if (site) {
-      site.spotlight ??= { label: "注目", items: [] };
-      site.spotlight.items = (site.spotlight.items ?? []).filter((item) => String(item.label ?? "").trim());
-      site.footer ??= { columns: [] };
-      site.footer.columns = (site.footer.columns ?? []).map((column) => ({
-        ...column,
-        links: (column.links ?? []).filter((link) => String(link.label ?? "").trim()),
-      }));
-      site.menu ??= { sections: [] };
-      site.menu.sections = (site.menu.sections ?? []).map((section) => ({
-        ...section,
-        links: (section.links ?? []).filter((link) => String(link.label ?? "").trim()),
-      }));
-    }
-  }
-
-  function downloadSingleJSON() {
-    if (!jsonArea) return;
-    try {
-      const parsed = JSON.parse(jsonArea.value);
-      const payload = `${JSON.stringify(parsed, null, 2)}\n`;
-      WikiExport.downloadBlob(`${jsonKey}.json`, new Blob([payload], { type: "application/json" }));
-      showToast(`${jsonKey}.json を書き出しました。`, "success");
-    } catch (error) {
-      showToast(`JSONの構文エラー: ${error.message}`, "error", 6000);
     }
   }
 
@@ -1224,59 +910,8 @@
   }
 
   /* ======================================================================== *
-   * JSON panel
+   * Import
    * ======================================================================== */
-
-  function syncJsonArea() {
-    if (!jsonArea || !state[jsonKey]) return;
-    jsonArea.value = `${JSON.stringify(state[jsonKey], null, 2)}\n`;
-    if (jsonFileTag) jsonFileTag.textContent = `${jsonKey}.json`;
-    if (jsonFile) jsonFile.value = jsonKey;
-  }
-
-  function applyJson() {
-    if (!jsonArea || !state[jsonKey]) return;
-    let parsed;
-    try {
-      parsed = JSON.parse(jsonArea.value);
-    } catch (error) {
-      showToast(`JSONの構文エラー: ${error.message}`, "error", 6000);
-      return;
-    }
-
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      showToast("JSONのルートはオブジェクトにしてください。", "error");
-      return;
-    }
-    if (jsonKey === "article" && !Array.isArray(parsed.sections)) {
-      showToast("article.json には sections 配列が必要です。", "error");
-      return;
-    }
-    if (jsonKey === "categories" && !Array.isArray(parsed.groups)) {
-      showToast("categories.json には groups 配列が必要です。", "error");
-      return;
-    }
-    if (jsonKey === "site" && !parsed.site) {
-      showToast("site.json には site オブジェクトが必要です。", "error");
-      return;
-    }
-
-    state[jsonKey] = parsed;
-    fillStaticFields();
-    renderAll();
-    syncJsonArea();
-    markDirty();
-    showToast(`${jsonKey}.json をエディタに反映しました。`, "success");
-  }
-
-  function formatJson() {
-    if (!jsonArea) return;
-    try {
-      jsonArea.value = `${JSON.stringify(JSON.parse(jsonArea.value), null, 2)}\n`;
-    } catch (error) {
-      showToast(`JSONの構文エラー: ${error.message}`, "error", 6000);
-    }
-  }
 
   async function importFiles(fileList) {
     const files = Array.from(fileList || []);
@@ -1288,11 +923,10 @@
     for (const file of files) {
       try {
         const data = JSON.parse(await file.text());
-        if (data && data.site && data.article && data.categories) {
+        if (data && data.site && data.article) {
           Object.assign(loadedFiles, {
             site: data.site,
             article: data.article,
-            categories: data.categories,
           });
           continue;
         }
@@ -1300,7 +934,6 @@
         const lower = file.name.toLowerCase();
         let key = "";
         if (Array.isArray(data.sections) || lower.includes("article")) key = "article";
-        else if (Array.isArray(data.groups) || lower.includes("categor")) key = "categories";
         else if ((data.site && (data.footer || data.header || data.menu)) || lower.includes("site")) key = "site";
 
         if (!key) {
@@ -1316,11 +949,10 @@
     const next = {
       site: loadedFiles.site ?? state.site,
       article: loadedFiles.article ?? state.article,
-      categories: loadedFiles.categories ?? state.categories,
     };
 
-    if (!next.site || !next.article || !next.categories) {
-      showToast("site・article・categories を含むJSONを選択してください。", "error", 6000);
+    if (!next.site || !next.article) {
+      showToast("site・article を含むJSONを選択してください。", "error", 6000);
       if (failures.length) console.warn("読み込み失敗:", failures);
       return;
     }
@@ -1334,14 +966,12 @@
 
     state.site = next.site;
     state.article = next.article;
-    state.categories = next.categories;
     loaded = true;
     sanitizeState();
     window.WikiSite.setState(state);
 
     fillStaticFields();
     renderAll();
-    syncJsonArea();
     markDirty();
     persistNow({ silent: true });
     showToast(
@@ -1366,7 +996,6 @@
     if (loaded) {
       fillStaticFields();
       renderAll();
-      syncJsonArea();
       dirty = false;
       setStatus("saved", WindowStoreSafe.countUploadedAssets(state) ? "保存済み（画像は再選択）" : "このブラウザに保存済み");
       updateSavebar();
@@ -1425,7 +1054,6 @@
       panel.classList.toggle("is-active", panel.dataset.panel === name);
     }
 
-    if (name === "json") syncJsonArea();
     if (changed && scroll) {
       overlay?.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -1455,11 +1083,6 @@
       if (typeSelect) {
         const [sectionIndex, blockIndex] = typeSelect.dataset.blockType.split(":").map(Number);
         changeBlockType(sectionIndex, blockIndex, typeSelect.value);
-      }
-
-      if (event.target === jsonFile) {
-        jsonKey = jsonFile.value;
-        syncJsonArea();
       }
 
       if (event.target.matches("#import-files, #import-files-error")) {
@@ -1542,74 +1165,13 @@
         return;
       }
 
-      if (event.target.closest("[data-add-group]")) {
-        addGroup();
-        return;
-      }
-
-      const removeGroupButton = event.target.closest("[data-remove-group]");
-      if (removeGroupButton) {
-        removeGroup(Number(removeGroupButton.dataset.removeGroup));
-        return;
-      }
-
-      const moveGroupButton = event.target.closest("[data-move-group]");
-      if (moveGroupButton) {
-        moveGroup(Number(moveGroupButton.dataset.moveGroup), Number(moveGroupButton.dataset.delta));
-        return;
-      }
-
-      const addItemButton = event.target.closest("[data-add-cat-item]");
-      if (addItemButton) {
-        addCategoryItem(Number(addItemButton.dataset.addCatItem));
-        return;
-      }
-
-      const addFooterLink = event.target.closest("[data-add-footer-link]");
-      if (addFooterLink) {
-        const columnIndex = Number(addFooterLink.dataset.addFooterLink);
-        state.site.footer.columns[columnIndex].links ??= [];
-        state.site.footer.columns[columnIndex].links.push({ label: "新しいリンク", href: "#top" });
-        renderFooterColumns();
-        markDirty();
-        return;
-      }
-
-      const addMenuLink = event.target.closest("[data-add-menu-link]");
-      if (addMenuLink) {
-        const sectionIndex = Number(addMenuLink.dataset.addMenuLink);
-        state.site.menu.sections[sectionIndex].links ??= [];
-        state.site.menu.sections[sectionIndex].links.push({ label: "新しいリンク", href: "#top" });
-        renderMenuSections();
-        markDirty();
-        return;
-      }
-
       const removeArrayButton = event.target.closest("[data-remove-array]");
       if (removeArrayButton) {
         const path = removeArrayButton.dataset.removeArray;
         const index = Number(removeArrayButton.dataset.index);
         const array = getPath(state, path);
         if (Array.isArray(array)) {
-          if (path === "site.footer.columns" || path === "site.menu.sections") {
-            if (!confirmRemove("このまとまりを削除しますか？")) return;
-          }
           array.splice(index, 1);
-          renderForPath(path);
-          markDirty();
-        }
-        return;
-      }
-
-      const moveArrayButton = event.target.closest("[data-move-array]");
-      if (moveArrayButton) {
-        const path = moveArrayButton.dataset.moveArray;
-        const index = Number(moveArrayButton.dataset.index);
-        const delta = Number(moveArrayButton.dataset.delta);
-        const array = getPath(state, path);
-        const target = index + delta;
-        if (Array.isArray(array) && target >= 0 && target < array.length) {
-          [array[index], array[target]] = [array[target], array[index]];
           renderForPath(path);
           markDirty();
         }
@@ -1621,15 +1183,6 @@
         delete state.article.linkTerms[removeTermButton.dataset.removeTerm];
         renderLinkTerms();
         markDirty();
-        return;
-      }
-
-      const jsonAction = event.target.closest("[data-json-action]");
-      if (jsonAction) {
-        const name = jsonAction.dataset.jsonAction;
-        if (name === "format") formatJson();
-        else if (name === "apply") applyJson();
-        else if (name === "download") downloadSingleJSON();
       }
     });
 

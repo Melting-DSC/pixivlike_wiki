@@ -39,7 +39,7 @@
       <p class="eyebrow">SITE GUIDE</p>
       <h1>使い方</h1>
       <p class="lead">
-        記事ページを開いたまま編集モードへ切り替え、タイトル・本文・画像・サイト設定を書き換えられます。
+        記事ページを開いたまま編集モードへ切り替え、タイトル・本文・画像を書き換えられます。
         変更はこのブラウザに自動保存され、記事に戻るとすぐに反映されます。
       </p>
       <div class="intro-actions">
@@ -81,8 +81,8 @@
             <a href="index.html#editor"><span>編集モード</span><code>index.html#editor</code></a>
           </div>
           <ol class="steps">
-            <li><strong>編集モードを開く</strong><span>ヘッダー、本文の「この記事を編集する」、フッターのどこからでも開けます。</span></li>
-            <li><strong>フォームで書き換える</strong><span>左のメニューから基本情報・本文・カテゴリ・サイト設定を選びます。</span></li>
+            <li><strong>編集モードを開く</strong><span>ヘッダーの「この記事を編集」、サイドバーやメニューの「編集モードを開く」から開けます。</span></li>
+            <li><strong>フォームで書き換える</strong><span>左のメニューから基本情報・本文を選びます。</span></li>
             <li><strong>記事に戻る</strong><span>「記事に戻る」を押すと、編集した内容がそのまま記事に反映されています。</span></li>
           </ol>
           <div class="callout callout--info">
@@ -107,27 +107,13 @@
               <p>節とブロックの追加・削除・並べ替え。段落、リスト、コード、注記、画像、タグ、引用、区切り線。</p>
             </div>
             <div class="file-card">
-              <h3>カテゴリ</h3>
-              <p>記事上部に表示するカテゴリ名と、カテゴリの説明・収録項目。カテゴリ一覧は記事ページには表示されません。</p>
-            </div>
-            <div class="file-card">
-              <h3>サイト設定</h3>
-              <p>サイト名、注意バー、ヘッダー、注目リンク、フッター、モバイルメニュー。</p>
-            </div>
-            <div class="file-card">
               <h3>書き出し</h3>
               <p>JSON・HTML・PNG・PDFへの書き出しと、JSONファイルの読み込み。</p>
-            </div>
-            <div class="file-card">
-              <h3>JSON</h3>
-              <p>3つのJSONを直接編集。構文を確認して画面に反映できます。</p>
             </div>
           </div>
           <h3>できること</h3>
           <ul>
             <li>本文セクションとブロックの追加・削除・並べ替え。</li>
-            <li>カテゴリと収録項目の追加・削除・並べ替え。</li>
-            <li>JSONタブで直接編集し、構文を確認してから反映。</li>
             <li><kbd>Ctrl</kbd> / <kbd>Cmd</kbd> + <kbd>S</kbd> で明示的に保存。</li>
             <li>「記事に戻る」で編集モードを閉じ、元の位置に戻る。</li>
           </ul>
@@ -199,7 +185,7 @@
               <tbody>
                 <tr>
                   <td><strong>JSON</strong></td>
-                  <td>サイト・記事・カテゴリを1つのファイルにまとめたもの。</td>
+                  <td>サイト・記事を1つのファイルにまとめたもの。</td>
                   <td>バックアップ、再編集、別のブラウザへの移行。</td>
                 </tr>
                 <tr>
@@ -236,8 +222,8 @@
             「書き出し」パネルの「ファイルから読み込む」から、JSONを選んで編集を再開できます。
           </p>
           <ul>
-            <li>このサイトが書き出したJSON（サイト・記事・カテゴリをまとめたもの）をそのまま選べます。</li>
-            <li><code>site.json</code>、<code>article.json</code>、<code>categories.json</code> の3ファイルをまとめて選ぶこともできます。</li>
+            <li>このサイトが書き出したJSON（サイト・記事をまとめたもの）をそのまま選べます。</li>
+            <li><code>site.json</code>、<code>article.json</code> の2ファイルをまとめて選ぶこともできます。</li>
             <li>読み込んだ内容は、その場で記事に反映され、このブラウザに保存されます。</li>
             <li>読み込み前に現在の編集内容を残したい場合は、先にJSONを書き出してください。</li>
           </ul>

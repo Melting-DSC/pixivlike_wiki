@@ -42,22 +42,6 @@ function validateArticle(article) {
   }
 }
 
-function validateCategories(categories) {
-  if (!Array.isArray(categories?.groups)) fail("content/categories.json: groups は配列で指定してください");
-
-  const ids = new Set();
-  for (const [index, group] of categories.groups.entries()) {
-    const id = String(group.id || "").trim() || `category-${index + 1}`;
-    if (ids.has(id)) fail(`category id が重複しています: ${id}`);
-    ids.add(id);
-    if (!group.name) fail(`categories.groups[${index}].name は必須です`);
-    if (!Array.isArray(group.items)) warnings.push(`カテゴリ「${group.name}」の items がありません`);
-    for (const item of group.items || []) {
-      if (!item.name) fail(`カテゴリ「${group.name}」に名前のない項目があります`);
-    }
-  }
-}
-
 function validateSite(site) {
   if (!site?.site?.name) fail("content/site.json: site.name は必須です");
 }
@@ -116,18 +100,9 @@ function scanBlocks(section) {
 
 const site = await readJSON("site.json");
 const article = await readJSON("article.json");
-const categories = await readJSON("categories.json");
 
 validateSite(site);
 validateArticle(article);
-validateCategories(categories);
-
-const groupNames = new Set(categories.groups.map((group) => group.name));
-for (const name of article.categories || []) {
-  if (!groupNames.has(name)) {
-    warnings.push(`記事のカテゴリ「${name}」に対応するグループが categories.json にありません`);
-  }
-}
 
 await checkLocalAsset(article.hero?.src, "hero");
 for (const section of article.sections) {
@@ -140,8 +115,6 @@ for (const section of article.sections) {
 }
 
 const totalBlocks = article.sections.reduce((sum, section) => sum + (section.blocks?.length || 0), 0);
-const totalItems = categories.groups.reduce((sum, group) => sum + (group.items?.length || 0), 0);
-const uniqueItems = new Set(categories.groups.flatMap((group) => (group.items || []).map((item) => item.name))).size;
 const tags = article.relatedTags || [];
 
 if (warnings.length) {
@@ -151,5 +124,5 @@ if (warnings.length) {
 
 console.log("✓ コンテンツを検証しました（記事はブラウザで描画されます）");
 console.log(`  記事: ${article.title} / セクション: ${article.sections.length} / ブロック: ${totalBlocks}`);
-console.log(`  カテゴリ: ${categories.groups.length} / 項目: ${totalItems}（ユニーク ${uniqueItems}） / タグ: ${tags.length}`);
+console.log(`  タグ: ${tags.length}`);
 if (warnings.length) console.log(`  警告: ${new Set(warnings).size}件`);

@@ -602,6 +602,11 @@
     document.addEventListener(
       "click",
       async (event) => {
+        if (event.target.closest("[data-empty-link]")) {
+          event.preventDefault();
+          return;
+        }
+
         const editorTrigger = event.target.closest("[data-open-editor], a[href='#editor']");
         if (editorTrigger && root.contains(editorTrigger)) {
           event.preventDefault();

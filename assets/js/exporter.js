@@ -1,7 +1,7 @@
 /* ==========================================================================
    Client-side exports: JSON / HTML / PNG / PDF.
 
-   - JSON  : one bundle containing site, article and categories.
+   - JSON  : one bundle containing site and article.
    - HTML  : a standalone document with the stylesheet and images inlined.
    - PNG   : a full-length capture of the article card.
    - PDF   : the same capture split across A4 pages.
@@ -93,7 +93,6 @@
       exportedAt: new Date().toISOString(),
       site: state.site,
       article: state.article,
-      categories: state.categories,
     };
     const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], {
       type: "application/json;charset=utf-8",

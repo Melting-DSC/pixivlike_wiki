@@ -49,8 +49,7 @@ PORT=8080 npm run dev
 ├── robots.txt              # 検索エンジンのクロール拒否
 ├── content/
 │   ├── site.json           # サイト名・ヘッダー・フッター・メニュー
-│   ├── article.json        # 記事本文・画像・タグ・履歴
-│   └── categories.json     # カテゴリデータ（記事ページには一覧を表示しない）
+│   └── article.json        # 記事本文・画像・タグ・履歴
 ├── assets/
 │   ├── css/style.css       # 記事ページとHTML書き出しのスタイル
 │   ├── css/editor.css      # 編集モードのスタイル
@@ -73,7 +72,7 @@ PORT=8080 npm run dev
 
 ## アーキテクチャ
 
-1. `assets/js/store.js` が `content/site.json`、`content/article.json`、`content/categories.json` を `fetch` する。
+1. `assets/js/store.js` が `content/site.json`、`content/article.json` を `fetch` する。
 2. `localStorage` に保存済みの編集内容があれば、既定データへ深くマージする。
 3. `assets/js/render.js` が記事HTMLと検索インデックスを生成し、`assets/js/main.js` が `#site-root` へ描画する。
 4. 編集モードは `index.html` 内の `#editor-overlay` にあり、ページ移動せずに開閉する。
@@ -93,7 +92,7 @@ PORT=8080 npm run dev
 
 | キー | 内容 |
 | --- | --- |
-| `uchinoko-wiki:content:v1` | `{ site, article, categories }` をまとめた編集内容 |
+| `uchinoko-wiki:content:v1` | `{ site, article }` をまとめた編集内容 |
 | `uchinoko-wiki:content:v1:savedAt` | 最終保存日時（ISO 8601） |
 
 - 保存は `WikiStore.save()` が行い、画像の `data:` URL は保存前に空文字へ置換します。
@@ -113,7 +112,7 @@ PORT=8080 npm run dev
 
 | 形式 | 実装 | 内容 |
 | --- | --- | --- |
-| JSON | `WikiExport.exportJSON` | `{ format, version, exportedAt, site, article, categories }` の1ファイル |
+| JSON | `WikiExport.exportJSON` | `{ format, version, exportedAt, site, article }` の1ファイル |
 | HTML | `WikiExport.exportHTML` | `style.css` と画像を埋め込んだ単体HTML |
 | PNG | `WikiExport.exportPNG` | 記事全体のキャプチャ |
 | PDF | `WikiExport.exportPDF` | PNGと同じキャプチャをJPEG化し、A4複数ページへ分割 |
@@ -127,15 +126,15 @@ PORT=8080 npm run dev
 
 「書き出し」パネルの `#import-files` は次の両方を受け付けます。
 
-- 本サイトが書き出したJSONバンドル（`site` / `article` / `categories` を持つもの）
-- `site.json`、`article.json`、`categories.json` の個別ファイル（複数選択可）
+- 本サイトが書き出したJSONバンドル（`site` / `article` を持つもの。旧形式の `categories` は無視）
+- `site.json`、`article.json` の個別ファイル（複数選択可）
 
 読み込んだ内容は検証後に `localStorage` へ保存され、記事へ即時反映されます。
 読み込み前の内容は自動では退避されません。必要なら先にJSONを書き出してください。
 
 ## データ構造
 
-3ファイルはすべてUTF-8のJSONです。コメントは書けません。
+2ファイルはすべてUTF-8のJSONです。コメントは書けません。
 
 ### `content/article.json`
 
@@ -145,9 +144,8 @@ PORT=8080 npm run dev
 | `reading` | string | 読み。ページタイトルに表示 |
 | `summary` | string | 冒頭の説明。meta descriptionにも使用 |
 | `breadcrumb` | array | `{ label, href? }` の配列。カテゴリ系の href はリンクにしない |
-| `categories` | string[] | 記事上部のカテゴリ名。`categories.json` のグループ名と対応 |
-| `hero` | object | `src`, `alt`, `caption`, `credit`, `creditHref` |
-| `actions` | array | `{ label, href, primary? }`。`#editor` は編集モードを開く |
+| `hero` | object | `src`, `alt`, `caption`, `credit`。画像は押しても移動しない空リンク |
+| `actions` | array | `{ label, primary? }`。タイトル下のリンク。押しても移動しない空リンク |
 | `updated` | string | 最終更新日（`YYYY-MM-DD`） |
 | `version` | string | バージョン表記 |
 | `linkTerms` | object | `[[語句]]` のリンク先 |
@@ -174,32 +172,6 @@ PORT=8080 npm run dev
 - `title` は必須。
 - `blocks` は配列。省略時は空として扱われます。
 
-### `content/categories.json`
-
-```json
-{
-  "title": "カテゴリ一覧",
-  "description": "一覧の説明文",
-  "groups": [
-    {
-      "id": "general",
-      "name": "一般",
-      "color": "#5b7c99",
-      "description": "グループの説明",
-      "items": [
-        { "name": "C言語", "href": "#top", "current": true },
-        { "name": "未作成の項目", "soon": true }
-      ]
-    }
-  ]
-}
-```
-
-- `groups` は必須。`name` は必須、`items` 省略時は空。
-- `id` は一意にします。省略時は `category-N` として扱います。
-- カテゴリ一覧・収録項目は記事ページには描画しません。カテゴリ名は記事上部のチップとして表示します。
-- 編集モードではデータを保持・編集できます。`current` と `soon` はデータとして残ります。
-
 ### `content/site.json`
 
 | キー | 内容 |
@@ -207,15 +179,10 @@ PORT=8080 npm run dev
 | `site` | `name`, `badge`, `mark`, `tagline`, `description`, `lang`, `themeColor` |
 | `notice` | 上部の注意バー。`enabled`, `text`, `button`, `storageKey` |
 | `header` | 検索プレースホルダー、編集ボタン、ログインボタンの文言とリンク |
-| `spotlight` | 「注目」リンク。`query` は検索、`href` は通常リンク |
-| `footer` | `blurb`, `columns`, `copyright`, `disclaimer` |
+| `footer` | `disclaimer`。フッターにはロゴと免責事項のみを表示 |
 | `menu` | モバイルドロワーの `title` と `sections` |
 
-`footer.columns[].links[]` は次のいずれかです。
-
-- `{ "label": "...", "href": "..." }` — 通常リンク
-- `{ "label": "...", "action": "history" }` — 編集履歴ダイアログ
-- `{ "label": "...", "action": "soon" }` — 準備中トースト
+`site.json` は編集モードからは編集できません。変更する場合はファイルを直接書き換えます。
 
 ## 本文ブロック
 
@@ -248,20 +215,19 @@ PORT=8080 npm run dev
 - URLは `WikiRender.safeHref()` で検証されます。`javascript:` などは `#` に置き換わります。
 - HTMLタグはエスケープされ、そのままでは埋め込まれません。
 - コードブロック内の `code` にはインライン記法を適用しません。
-- `#categories` や `#category-*` へのリンクは、カテゴリ一覧削除に伴いリンクにせず平文にします。
+- パンくず・モバイルメニューの `#categories` や `#category-*` へのリンクは、カテゴリ機能削除に伴いリンクにせず平文にします。
 
 ## 検証
 
 `npm run build`（または `npm run check`）は `scripts/build.mjs` を実行し、次を確認します。
 
-- `site.site.name`、`article.title`、`article.sections`、`categories.groups` の存在
-- セクションID・カテゴリIDの重複
-- セクション名、カテゴリ名、カテゴリ項目名の欠落
+- `site.site.name`、`article.title`、`article.sections` の存在
+- セクションIDの重複
+- セクション名の欠落
 - ローカルのヒーロー画像・`figure` 画像ファイルの存在
 - 未知のブロック種別
 - `linkTerms` にない `[[語句]]`
 - `2` / `3` 以外の section `level`
-- 記事カテゴリに対応するグループの有無
 
 ローカル画像パスはリポジトリルート基準です。`https://` と `data:` URL は存在チェックの対象外です。
 検証は警告のみで終了コード 0 になる項目もあります。ビルドはHTMLを生成しません。

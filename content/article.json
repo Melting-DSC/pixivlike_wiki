@@ -13,31 +13,22 @@
       "label": "言語"
     }
   ],
-  "categories": [
-    "一般",
-    "プログラミング言語",
-    "文化・その他"
-  ],
   "hero": {
     "src": "assets/images/c-language.svg",
     "alt": "青い六角形と大きなCの文字で描かれたC言語のアイコン",
     "caption": "C言語アイコン（パロディ）",
-    "credit": "百科事典編集部",
-    "creditHref": "#about"
+    "credit": "百科事典編集部"
   },
   "actions": [
     {
       "label": "この記事を編集する",
-      "href": "#editor",
       "primary": true
     },
     {
-      "label": "関連タグをたどる",
-      "href": "#related-tags"
+      "label": "関連タグをたどる"
     },
     {
-      "label": "このサイトについて",
-      "href": "#about"
+      "label": "このサイトについて"
     }
   ],
   "updated": "2026-10-25",
