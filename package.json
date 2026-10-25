@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "C言語を題材にした、ピクシブ百科事典風の非公式パロディ百科事典。",
+  "description": "創作キャラクター紹介用の、クライアントサイド完結のピクシブ百科事典風パロディ百科事典。",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs",
     "dev": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",
-    "preview": "node scripts/serve.mjs --no-watch"
+    "preview": "node scripts/serve.mjs"
   },
   "engines": {
     "node": ">=18"
